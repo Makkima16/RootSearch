@@ -4,7 +4,7 @@ import { getUserById, getUserProfile } from '@/services/users';
 import SideBar from '@/components/SideBar';
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from 'next/navigation';
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { LuLoaderCircle } from 'react-icons/lu';
 
 function StudentProfileContent() {
   const searchParams = useSearchParams();
@@ -77,9 +77,9 @@ function StudentProfileContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
+      <div className="flex items-center justify-center min-h-screen bg-rs-50 text-rs-ink">
         <div className="text-center">
-          <AiOutlineLoading3Quarters className="animate-spin text-4xl text-[#6356E5] mx-auto mb-4" />
+          <LuLoaderCircle className="animate-spin text-4xl text-rs-700 mx-auto mb-4" />
           <span className="text-lg">Cargando...</span>
         </div>
       </div>
@@ -88,13 +88,13 @@ function StudentProfileContent() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
+      <div className="flex items-center justify-center min-h-screen bg-rs-50 text-rs-ink">
         <div className="text-center">
-          <h1 className="text-2xl font-semibold mb-2">⚠️ Acceso Denegado</h1>
-          <p className="text-zinc-300">{error}</p>
+          <h1 className="rs-title text-2xl mb-2">Acceso Denegado</h1>
+          <p className="text-rs-ink">{error}</p>
           <a
             href="/dashboard"
-            className="mt-4 inline-block bg-[#6356E5] hover:bg-[#4f48c7] text-white px-4 py-2 rounded-lg transition"
+            className="mt-4 inline-block bg-rs-700 hover:bg-rs-800 text-white px-4 py-2 rounded-lg transition"
           >
             Volver al inicio
           </a>
@@ -104,47 +104,47 @@ function StudentProfileContent() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-[#040418] text-white">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-rs-50 text-rs-ink">
       
       {/* Sidebar */}
       <SideBar user={currentUser!} />
 
       {/* Contenido principal */}
-      <main className="flex-1 flex justify-center items-center p-4 sm:p-6 lg:p-10">
+      <main className="min-w-0 flex-1 flex justify-center items-start px-4 py-8 sm:px-6 lg:px-10">
 
-        <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 w-full max-w-3xl shadow-2xl">
+        <div className="bg-rs-surface border border-rs-line rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 w-full max-w-3xl shadow-2xl">
 
-          <div className="bg-[#0f0f1e] bg-opacity-50 rounded-xl p-4 sm:p-6">
+          <div className="bg-rs-50 rounded-xl p-4 sm:p-6">
 
             {/* Avatar y nombre */}
             <div className="flex flex-col items-center mb-6 sm:mb-8">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-[#6356E5] to-[#4f48c7] flex items-center justify-center text-3xl sm:text-4xl font-bold">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-rs-700 text-rs-lime flex items-center justify-center text-3xl sm:text-4xl font-bold">
                 {studentInfo?.name.charAt(0).toUpperCase()}
               </div>
               <p className="mt-3 sm:mt-4 text-xl sm:text-2xl font-bold text-center px-2">{studentInfo?.name}</p>
-              <span className="mt-1 px-3 py-1 bg-[#6356E5] bg-opacity-20 text-white rounded-full text-xs sm:text-sm">
+              <span className="mt-1 px-3 py-1 bg-rs-100 text-rs-800 font-semibold rounded-full text-xs sm:text-sm">
                 {studentInfo?.role}
               </span>
             </div>
 
             {/* Tabla de información */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 border border-gray-700 rounded-lg overflow-hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-2 border border-rs-input rounded-lg overflow-hidden">
 
-              <div className="border-b border-gray-700 p-3 sm:p-4 font-medium bg-[#1a1a2e] text-sm sm:text-base">Correo</div>
-              <div className="border-b border-gray-700 p-3 sm:p-4 text-blue-400 break-words text-sm sm:text-base">
+              <div className="border-b border-rs-input p-3 sm:p-4 font-medium bg-white text-sm sm:text-base">Correo</div>
+              <div className="border-b border-rs-input p-3 sm:p-4 text-rs-info break-words text-sm sm:text-base">
                 {studentInfo?.email}
               </div>
               
-              <div className="border-b border-gray-700 p-3 sm:p-4 font-medium bg-[#1a1a2e] text-sm sm:text-base">Fecha de registro</div>
-              <div className="border-b border-gray-700 p-3 sm:p-4 text-sm sm:text-base">{studentInfo?.createdAt}</div>
+              <div className="border-b border-rs-input p-3 sm:p-4 font-medium bg-white text-sm sm:text-base">Fecha de registro</div>
+              <div className="border-b border-rs-input p-3 sm:p-4 text-sm sm:text-base">{studentInfo?.createdAt}</div>
 
-              <div className="border-b border-gray-700 p-3 sm:p-4 font-medium bg-[#1a1a2e] text-sm sm:text-base">Teléfono</div>
-              <div className="border-b border-gray-700 p-3 sm:p-4 break-words text-sm sm:text-base">{studentInfo?.phone}</div>
+              <div className="border-b border-rs-input p-3 sm:p-4 font-medium bg-white text-sm sm:text-base">Teléfono</div>
+              <div className="border-b border-rs-input p-3 sm:p-4 break-words text-sm sm:text-base">{studentInfo?.phone}</div>
 
-              <div className="border-b border-gray-700 p-3 sm:p-4 font-medium bg-[#1a1a2e] text-sm sm:text-base">Dirección</div>
-              <div className="border-b border-gray-700 p-3 sm:p-4 break-words text-sm sm:text-base">{studentInfo?.address}</div>
+              <div className="border-b border-rs-input p-3 sm:p-4 font-medium bg-white text-sm sm:text-base">Dirección</div>
+              <div className="border-b border-rs-input p-3 sm:p-4 break-words text-sm sm:text-base">{studentInfo?.address}</div>
 
-              <div className="p-3 sm:p-4 font-medium bg-[#1a1a2e] text-sm sm:text-base">Fecha de nacimiento</div>
+              <div className="p-3 sm:p-4 font-medium bg-white text-sm sm:text-base">Fecha de nacimiento</div>
               <div className="p-3 sm:p-4 text-sm sm:text-base">{studentInfo?.birthDate}</div>
 
             </div>
@@ -160,7 +160,7 @@ export default function StudentProfile() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#050214] text-white">
+        <div className="min-h-screen flex items-center justify-center bg-rs-50 text-rs-ink">
           Cargando estudiante...
         </div>
       }

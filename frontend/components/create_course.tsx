@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { createCourseWithFile } from '../services/courses';
-import { FaTimes, FaBook } from 'react-icons/fa';
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { LuBookOpen, LuLoaderCircle, LuX } from 'react-icons/lu';
 
 interface CreateCourseModalProps {
   isOpen: boolean;
@@ -93,31 +92,31 @@ export default function CreateCourseModal({ isOpen, onClose, onSuccess, teacherI
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
       {/* Overlay */}
       <div 
-        className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"
+        className="absolute inset-0 bg-rs-950/60 backdrop-blur-sm"
         onClick={handleClose}
       />
       
       {/* Modal */}
-      <div className="relative bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 sm:p-8 animate-slideUp">
+      <div className="relative bg-rs-surface border border-rs-line rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 sm:p-8 animate-slideUp">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-            <FaBook className="text-[#6356E5]" />
+          <h2 className="text-2xl sm:text-3xl font-bold text-rs-ink flex items-center gap-3">
+            <LuBookOpen className="text-rs-700" />
             Crear Curso
           </h2>
           <button
             onClick={handleClose}
             disabled={loading}
-            className="text-gray-400 hover:text-white transition-colors duration-200 disabled:opacity-50 cursor-pointer"
+            className="text-rs-muted hover:text-rs-900 transition-colors duration-200 disabled:opacity-50 cursor-pointer"
             aria-label="Cerrar modal"
           >
-            <FaTimes className="text-2xl" />
+            <LuX className="text-2xl" />
           </button>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400 text-sm">
+          <div className="mb-4 p-3 bg-rs-error-bg border border-rs-error/30 rounded-lg text-rs-error text-sm">
             {error}
           </div>
         )}
@@ -126,8 +125,8 @@ export default function CreateCourseModal({ isOpen, onClose, onSuccess, teacherI
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Name Field */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
-              Nombre del Curso <span className="text-red-400">*</span>
+            <label htmlFor="name" className="block text-sm font-medium text-rs-ink mb-2">
+              Nombre del Curso <span className="text-rs-error">*</span>
             </label>
             <input
               type="text"
@@ -137,15 +136,15 @@ export default function CreateCourseModal({ isOpen, onClose, onSuccess, teacherI
               onChange={handleChange}
               required
               disabled={loading}
-              className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="Ej: Programación Web"
             />
           </div>
 
           {/* Description Field */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
-              Descripción <span className="text-red-400">*</span>
+            <label htmlFor="description" className="block text-sm font-medium text-rs-ink mb-2">
+              Descripción <span className="text-rs-error">*</span>
             </label>
             <textarea
               id="description"
@@ -155,15 +154,15 @@ export default function CreateCourseModal({ isOpen, onClose, onSuccess, teacherI
               required
               disabled={loading}
               rows={4}
-              className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="Describe el contenido y objetivos del curso..."
             />
           </div>
 
           {/* Student IDs Field (Optional) */}
           <div>
-            <label htmlFor="studentIds" className="block text-sm font-medium text-gray-300 mb-2">
-              IDs de Estudiantes <span className="text-gray-500">(opcional)</span>
+            <label htmlFor="studentIds" className="block text-sm font-medium text-rs-ink mb-2">
+              IDs de Estudiantes <span className="text-rs-muted">(opcional)</span>
             </label>
             <input
               type="text"
@@ -172,15 +171,15 @@ export default function CreateCourseModal({ isOpen, onClose, onSuccess, teacherI
               value={formData.studentIds}
               onChange={handleChange}
               disabled={loading}
-              className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="ID1, ID2, ID3 (separados por comas)"
             />
           </div>
 
           {/* File Upload Field (Optional) */}
           <div>
-            <label htmlFor="file" className="block text-sm font-medium text-gray-300 mb-2">
-              PIA (PDF) <span className="text-gray-500">(opcional)</span>
+            <label htmlFor="file" className="block text-sm font-medium text-rs-ink mb-2">
+              PIA (PDF) <span className="text-rs-muted">(opcional)</span>
             </label>
             <input
               type="file"
@@ -188,10 +187,10 @@ export default function CreateCourseModal({ isOpen, onClose, onSuccess, teacherI
               accept=".pdf"
               onChange={handleFileChange}
               disabled={loading}
-              className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#6356E5] file:text-white hover:file:bg-[#4f48c7] file:cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-rs-700 file:text-white hover:file:bg-rs-800 file:cursor-pointer focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             {file && (
-              <p className="mt-2 text-sm text-gray-400">
+              <p className="mt-2 text-sm text-rs-muted">
                 Archivo seleccionado: {file.name}
               </p>
             )}
@@ -203,18 +202,18 @@ export default function CreateCourseModal({ isOpen, onClose, onSuccess, teacherI
               type="button"
               onClick={handleClose}
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-3 bg-rs-100 hover:bg-rs-200 text-rs-ink font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading || !formData.name.trim() || !formData.description.trim()}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-[#6356E5] to-[#4f48c7] hover:from-[#4f48c7] hover:to-[#6356E5] text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 bg-rs-700 hover:bg-rs-800 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
-                  <AiOutlineLoading3Quarters className="animate-spin text-lg" />
+                  <LuLoaderCircle className="animate-spin text-lg" />
                   Creando...
                 </>
               ) : (

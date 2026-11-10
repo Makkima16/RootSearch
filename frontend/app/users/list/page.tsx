@@ -5,8 +5,7 @@ import { getUserProfile, getAllUsers, deleteUser } from "../../../services/users
 import SideBar from "@/components/SideBar";
 import CreateUserModal from "@/components/create_user";
 import Toast from "@/components/Toast";
-import { FaUsers, FaUserGraduate, FaChalkboardTeacher, FaPlus, FaTrash } from "react-icons/fa";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { LuGraduationCap, LuLoaderCircle, LuPlus, LuPresentation, LuTrash2, LuUsers } from 'react-icons/lu';
 
 type User = {
   _id?: string;
@@ -127,9 +126,9 @@ export default function UsersPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
+      <div className="flex items-center justify-center min-h-screen bg-rs-50 text-rs-ink">
         <div className="text-center">
-          <AiOutlineLoading3Quarters className="animate-spin text-4xl text-[#6356E5] mx-auto mb-4" />
+          <LuLoaderCircle className="animate-spin text-4xl text-rs-700 mx-auto mb-4" />
           <span className="text-lg">Cargando...</span>
         </div>
       </div>
@@ -138,13 +137,13 @@ export default function UsersPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
+      <div className="flex items-center justify-center min-h-screen bg-rs-50 text-rs-ink">
         <div className="text-center">
-          <h1 className="text-2xl font-semibold mb-2">⚠️ Acceso Denegado</h1>
-          <p className="text-zinc-300">{error}</p>
+          <h1 className="rs-title text-2xl mb-2">Acceso Denegado</h1>
+          <p className="text-rs-ink">{error}</p>
           <a
             href="/dashboard"
-            className="mt-4 inline-block bg-[#6356E5] hover:bg-[#4f48c7] text-white px-4 py-2 rounded-lg transition"
+            className="mt-4 inline-block bg-rs-700 hover:bg-rs-800 text-white px-4 py-2 rounded-lg transition"
           >
             Volver al inicio
           </a>
@@ -154,30 +153,30 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-[#040418] text-white font-sans">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-rs-50 text-rs-ink font-sans">
       <SideBar user={currentUser!} />
-      <main className="flex-1 p-4 sm:p-6 lg:p-8">
+      <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 lg:px-10">
         <div className="mb-6 sm:mb-8 flex items-center gap-3">
-          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-            <FaUsers className="text-[#6356E5] text-xl sm:text-2xl" /> 
+          <h1 className="rs-title text-2xl sm:text-3xl flex items-center gap-2">
+            <LuUsers className="text-rs-700 text-xl sm:text-2xl" /> 
             <span className="hidden sm:inline">Gestión de Usuarios</span>
             <span className="sm:hidden">Gestión de Usuarios</span>
           </h1>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="bg-[#6356E5] hover:bg-[#4f48c7] text-white p-2 rounded-lg transition cursor-pointer"
+            className="bg-rs-700 hover:bg-rs-800 text-white p-2 rounded-lg transition cursor-pointer"
             title="Crear nuevo usuario"
           >
-            <FaPlus className="text-lg" />
+            <LuPlus className="text-lg" />
           </button>
         </div>
 
         {/* Filtros */}
-        <div className="mb-4 sm:mb-6 bg-[#101434] rounded-lg p-4 sm:p-6 shadow-lg">
+        <div className="mb-4 sm:mb-6 bg-rs-surface rounded-lg p-4 sm:p-6 shadow-lg">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             {/* Búsqueda por nombre */}
             <div>
-              <label htmlFor="search" className="block text-xs sm:text-sm font-medium mb-2 text-white/70">
+              <label htmlFor="search" className="block text-xs sm:text-sm font-medium mb-2 text-rs-muted">
                 Buscar por nombre
               </label>
               <input
@@ -186,20 +185,20 @@ export default function UsersPage() {
                 placeholder="Escribe un nombre..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 sm:px-4 bg-[#1a1a2e] border border-[#333] rounded-lg text-sm sm:text-base text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] transition"
+                className="w-full px-3 py-2 sm:px-4 bg-white border border-rs-line rounded-lg text-sm sm:text-base text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 transition"
               />
             </div>
 
             {/* Filtro por rol */}
             <div>
-              <label htmlFor="roleFilter" className="block text-xs sm:text-sm font-medium mb-2 text-white/70">
+              <label htmlFor="roleFilter" className="block text-xs sm:text-sm font-medium mb-2 text-rs-muted">
                 Filtrar por rol
               </label>
               <select
                 id="roleFilter"
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value as "estudiante" | "docente" | "todos")}
-                className="w-full px-3 py-2 sm:px-4 bg-[#1a1a2e] border border-[#333] rounded-lg text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-[#6356E5] transition cursor-pointer"
+                className="w-full px-3 py-2 sm:px-4 bg-white border border-rs-line rounded-lg text-sm sm:text-base text-rs-ink focus:outline-none focus:ring-2 focus:ring-rs-700 transition cursor-pointer"
               >
                 <option value="todos">Todos los usuarios</option>
                 <option value="estudiante">Estudiantes</option>
@@ -209,22 +208,22 @@ export default function UsersPage() {
           </div>
 
           {/* Resumen de filtros */}
-          <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-white/60">
+          <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-rs-muted">
             <span>Mostrando {filteredUsers.length} de {users.length} usuarios</span>
             {searchTerm && (
-              <span className="px-3 py-1 bg-[#6356E5]/20 rounded-full">
+              <span className="px-3 py-1 bg-rs-100 rounded-full">
                 Búsqueda: "{searchTerm}"
               </span>
             )}
             {roleFilter !== "todos" && (
-              <span className="px-3 py-1 bg-[#6356E5]/20 rounded-full flex items-center gap-2">
+              <span className="px-3 py-1 bg-rs-100 rounded-full flex items-center gap-2">
                 {roleFilter === "estudiante" ? (
                   <>
-                    <FaUserGraduate /> Estudiantes
+                    <LuGraduationCap /> Estudiantes
                   </>
                 ) : (
                   <>
-                    <FaChalkboardTeacher /> Docentes
+                    <LuPresentation /> Docentes
                   </>
                 )}
               </span>
@@ -233,9 +232,9 @@ export default function UsersPage() {
         </div>
 
         {/* Tabla de usuarios */}
-        <div className="w-full overflow-x-auto rounded-lg shadow-lg bg-[#101434]">
-          <table className="min-w-[600px] w-full text-sm text-white">
-            <thead className="bg-[#1a1a2e]">
+        <div className="w-full overflow-x-auto rounded-lg shadow-lg bg-rs-surface">
+          <table className="min-w-[600px] w-full text-sm text-rs-ink">
+            <thead className="bg-white">
               <tr>
                 <th className="py-2 sm:py-3 px-2 sm:px-4 text-left whitespace-nowrap text-xs sm:text-sm">Nombre</th>
                 <th className="py-2 sm:py-3 px-2 sm:px-4 text-left whitespace-nowrap text-xs sm:text-sm">Correo</th>
@@ -247,7 +246,7 @@ export default function UsersPage() {
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-6 px-4 text-center text-zinc-400">
+                  <td colSpan={5} className="py-6 px-4 text-center text-rs-muted">
                     {searchTerm || roleFilter !== "todos"
                       ? "No se encontraron usuarios con los filtros aplicados."
                       : "No hay usuarios registrados."}
@@ -260,7 +259,7 @@ export default function UsersPage() {
                   return (
                     <tr
                       key={user._id || idx}
-                      className="border-b border-[#333] hover:bg-[#2a2a3a] transition"
+                      className="border-b border-rs-line hover:bg-rs-50 transition"
                     >
                       <td 
                         className="py-2 sm:py-3 px-2 sm:px-4 whitespace-nowrap text-xs sm:text-sm md:text-base flex items-center gap-2 sm:gap-3 cursor-pointer"
@@ -268,7 +267,7 @@ export default function UsersPage() {
                           window.location.href = `/users/view?userId=${user._id}`;
                         }}
                       >
-                        <div className={`w-6 h-6 sm:w-8 sm:h-8 ${userRole === "docente" ? "bg-[#28a745]" : "bg-[#6356E5]"} text-white rounded-full flex items-center justify-center text-xs sm:text-base`}>
+                        <div className={`w-6 h-6 sm:w-8 sm:h-8 ${userRole === "docente" ? "bg-rs-900" : "bg-rs-700"} text-white rounded-full flex items-center justify-center text-xs sm:text-base`}>
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                         <span className="truncate max-w-[100px] sm:max-w-[150px] md:max-w-none">{user.name}</span>
@@ -289,8 +288,8 @@ export default function UsersPage() {
                       >
                         <span className={`px-2 py-1 sm:px-3 rounded-full text-xs font-semibold ${
                           userRole === "docente" 
-                            ? "bg-[#28a745]/20 text-[#28a745]" 
-                            : "bg-[#6356E5]/20 text-[#6356E5]"
+                            ? "bg-rs-100 text-rs-700" 
+                            : "bg-rs-100 text-rs-700"
                         }`}>
                           {userRole === "docente" ? "Docente" : "Estudiante"}
                         </span>
@@ -312,16 +311,16 @@ export default function UsersPage() {
                           disabled={isDeleting}
                           className={`${
                             isDeleting 
-                              ? 'bg-gray-500 cursor-not-allowed' 
-                              : 'bg-red-600 hover:bg-red-700 cursor-pointer'
+                              ? 'bg-rs-400 cursor-not-allowed' 
+                              : 'bg-rs-error hover:bg-[#7f1e10] cursor-pointer'
                           } text-white px-3 py-1 rounded-lg transition text-xs sm:text-sm flex items-center gap-1 mx-auto`}
                           title="Eliminar usuario"
                         >
                           {isDeleting ? (
-                            <AiOutlineLoading3Quarters className="animate-spin" />
+                            <LuLoaderCircle className="animate-spin" />
                           ) : (
                             <>
-                              <FaTrash className="text-xs" />
+                              <LuTrash2 className="text-xs" />
                               <span className="hidden sm:inline">Eliminar</span>
                             </>
                           )}
@@ -345,37 +344,37 @@ export default function UsersPage() {
 
       {/* Modal de confirmación de eliminación */}
       {userToDelete && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#101434] rounded-lg shadow-2xl max-w-md w-full border border-[#333]">
+        <div className="fixed inset-0 bg-rs-950/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-rs-surface rounded-lg shadow-2xl max-w-md w-full border border-rs-line">
             <div className="p-6">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-600/20 rounded-full">
-                <FaTrash className="text-3xl text-red-500" />
+              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-rs-error-bg rounded-full">
+                <LuTrash2 className="text-3xl text-rs-error" />
               </div>
-              <h2 className="text-xl font-bold text-white text-center mb-2">
+              <h2 className="text-xl font-bold text-rs-ink text-center mb-2">
                 ¿Eliminar usuario?
               </h2>
-              <p className="text-zinc-400 text-center mb-6">
+              <p className="text-rs-muted text-center mb-6">
                 ¿Estás seguro de que deseas eliminar al usuario{" "}
-                <span className="text-white font-semibold">"{userToDelete.name}"</span>?
+                <span className="text-rs-ink font-semibold">"{userToDelete.name}"</span>?
                 <br />
-                <span className="text-red-400 text-sm">Esta acción no se puede deshacer.</span>
+                <span className="text-rs-error text-sm">Esta acción no se puede deshacer.</span>
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setUserToDelete(null)}
                   disabled={deletingUserId === userToDelete.id}
-                  className="flex-1 bg-[#333] hover:bg-[#444] text-white px-4 py-2 rounded-lg transition font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-rs-line hover:bg-rs-200 text-rs-ink px-4 py-2 rounded-lg transition font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleDeleteUser}
                   disabled={deletingUserId === userToDelete.id}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 bg-rs-error hover:bg-[#7f1e10] text-white px-4 py-2 rounded-lg transition font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {deletingUserId === userToDelete.id ? (
                     <>
-                      <AiOutlineLoading3Quarters className="animate-spin" />
+                      <LuLoaderCircle className="animate-spin" />
                       Eliminando...
                     </>
                   ) : (

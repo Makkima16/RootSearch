@@ -12,8 +12,25 @@ import SideBar from '@/components/SideBar';
 import Toast from '@/components/Toast';
 import UploadMaterialModal from '@/components/upload_material';
 import EditCourseModal from '@/components/edit_course';
-import { FaBook, FaUser, FaCalendar, FaFileAlt, FaArrowLeft, FaDownload, FaFilePdf, FaUpload, FaUserPlus, FaUserMinus, FaTimes } from 'react-icons/fa';
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import {
+  LuArrowLeft,
+  LuBookOpen,
+  LuCalendar,
+  LuCircleAlert,
+  LuDownload,
+  LuFileDown,
+  LuFileText,
+  LuLoaderCircle,
+  LuMic,
+  LuPencil,
+  LuSparkles,
+  LuUpload,
+  LuUserMinus,
+  LuUserPlus,
+  LuUsers,
+} from 'react-icons/lu';
+import { Modal, StatusChip, LoadingScreen, MessageScreen } from '@/components/ui';
+import { GeneratedContentList, GeneratedContentTabs, GeneratedContentBody } from '@/components/GeneratedContent';
 
 type Course = {
   _id: string;
@@ -73,6 +90,7 @@ function CourseViewPageContent() {
   const [studentToRemove, setStudentToRemove] = useState<{ _id: string; name: string; email: string } | null>(null);
   const [removingStudent, setRemovingStudent] = useState(false);
   const [showEditCourseModal, setShowEditCourseModal] = useState(false);
+  const [courseTab, setCourseTab] = useState<"materiales" | "estudiantes" | "piaa">("materiales");
 
   useEffect(() => {
     async function fetchUser() {
@@ -393,7 +411,7 @@ function CourseViewPageContent() {
           <meta charset="UTF-8">
           <style>
             body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-            h1 { color: #6356E5; border-bottom: 3px solid #6356E5; padding-bottom: 10px; }
+            h1 { color: #12392C; border-bottom: 3px solid #1E6B52; padding-bottom: 10px; }
             .info { margin-bottom: 20px; color: #666; }
             .content { white-space: pre-wrap; margin-top: 20px; }
           </style>
@@ -432,322 +450,389 @@ function CourseViewPageContent() {
     }
   };
 
+
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
-        <div className="text-center">
-          <AiOutlineLoading3Quarters className="animate-spin text-4xl text-[#6356E5] mx-auto mb-4" />
-          <span className="text-lg">Cargando curso...</span>
-        </div>
-      </div>
-    );
+    return <LoadingScreen label="Cargando curso..." />;
   }
 
   if (error || !course) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold mb-2">⚠️ Error</h1>
-          <p className="text-zinc-300 mb-4">{error || "No se pudo cargar el curso"}</p>
-          <a
-            href="/courses/list"
-            className="inline-block bg-[#6356E5] hover:bg-[#4f48c7] text-white px-6 py-3 rounded-lg transition font-semibold cursor-pointer"
-          >
+      <MessageScreen
+        title="Error"
+        message={error || "No se pudo cargar el curso"}
+        action={
+          <a href="/courses/list" className="rs-btn-primary">
             Volver a la lista
           </a>
-        </div>
-      </div>
+        }
+      />
     );
   }
 
+  const isStaff = user?.role.toLowerCase() === "docente" || user?.role.toLowerCase() === "administrador";
+  const isTeacher = user?.role.toLowerCase() === "docente";
+  const materialName = (material: any, index: number) =>
+    material.filename || material.originalName || `Material ${index + 1}`;
+  const materialId = (material: any) =>
+    material._id?.toString() || material._id || String(material._id) || material.id;
+
+  /** Tarjeta de un material subido (lista, descarga y exportación usan la misma). */
+  const renderMaterial = (material: any, index: number, action?: { icon: React.ReactNode; onClick: () => void }) => {
+    const content = (
+      <>
+        <div className="min-w-0 flex-1">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-rs-900 px-2.5 py-1 text-xs font-bold text-rs-lime">#{index + 1}</span>
+            <span
+              className={`rs-chip ${
+                material.status === "READY"
+                  ? "bg-rs-ok-bg text-rs-ok"
+                  : material.status === "PENDING"
+                  ? "bg-rs-warn-bg text-rs-warn"
+                  : "bg-rs-100 text-rs-800"
+              }`}
+            >
+              {material.status || "N/A"}
+            </span>
+            <span className="rounded-md bg-rs-100 px-2 py-0.5 text-xs font-medium text-rs-800">{material.type || "PDF"}</span>
+          </div>
+          <p className="flex items-center gap-2 font-medium text-rs-ink">
+            <LuFileText className="size-4 shrink-0 text-rs-700" aria-hidden="true" />
+            <span className="truncate">{materialName(material, index)}</span>
+          </p>
+          {material.description && <p className="mt-1 text-sm text-rs-muted">{material.description}</p>}
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-rs-muted">
+            <span>Tamaño: {material.size ? `${(material.size / 1024).toFixed(2)} KB` : "N/A"}</span>
+            <span>Almacenamiento: {material.storageProvider || "N/A"}</span>
+            {material.createdAt && <span>{new Date(material.createdAt).toLocaleDateString("es-ES")}</span>}
+          </div>
+        </div>
+        {action && <span className="shrink-0 text-rs-700 transition-transform group-hover:scale-110">{action.icon}</span>}
+      </>
+    );
+
+    const key = materialId(material) || `material-${index}`;
+    const base = "flex w-full items-center justify-between gap-4 rounded-xl border border-rs-line bg-white p-4 text-left";
+    return action ? (
+      <li key={key}>
+        <button
+          type="button"
+          onClick={action.onClick}
+          className={`${base} group cursor-pointer transition-colors hover:border-rs-600 hover:bg-[#f3f9f5]`}
+        >
+          {content}
+        </button>
+      </li>
+    ) : (
+      <li key={key} className={base}>
+        {content}
+      </li>
+    );
+  };
+
+  const renderMaterialsBody = (
+    emptyText: string,
+    action?: (material: any, index: number) => { icon: React.ReactNode; onClick: () => void },
+  ) =>
+    loadingMaterials ? (
+      <div className="flex justify-center py-8">
+        <LuLoaderCircle className="size-10 animate-spin text-rs-700" aria-hidden="true" />
+      </div>
+    ) : materialsForCourse.length > 0 ? (
+      <ul className="space-y-3">
+        {materialsForCourse.map((material, index) => renderMaterial(material, index, action?.(material, index)))}
+      </ul>
+    ) : (
+      <p className="py-8 text-center text-rs-muted">{emptyText}</p>
+    );
+
+  const courseTabs: { id: "materiales" | "estudiantes" | "piaa"; label: string }[] = [
+    { id: "materiales", label: "Materiales" },
+    { id: "estudiantes", label: `Estudiantes (${course.students.length})` },
+  ];
+  if (course.piaa_syllabus) courseTabs.push({ id: "piaa", label: "PIAA" });
+
   return (
-    <div className="flex min-h-screen bg-[#040418] text-white font-sans">
+    <div className="flex min-h-screen flex-col bg-rs-50 font-sans text-rs-ink lg:flex-row">
       <SideBar user={user ?? undefined} />
-      
-      <main className="flex-1 p-6 md:p-8">
-        {/* Header con botón de volver */}
-        <div className="mb-6">
-          <button
-            onClick={() => window.location.href = '/courses/list'}
-            className="flex items-center gap-2 text-zinc-400 hover:text-white transition mb-4 cursor-pointer"
-          >
-            <FaArrowLeft />
-            <span>Volver a la lista</span>
-          </button>
-          
-          <div className="flex items-center gap-3">
-            <div className="w-16 h-16 bg-[#6356E5] text-white rounded-full flex items-center justify-center text-2xl font-bold">
-              {course.name.charAt(0).toUpperCase()}
+
+      <main className="flex min-w-0 flex-1 flex-col">
+        {/* Encabezado del curso */}
+        <div className="bg-rs-700 px-4 pt-6 text-white sm:px-6 lg:px-10">
+          <nav aria-label="Ruta" className="mb-5 flex items-center gap-2 text-sm text-rs-150">
+            <a href="/courses/list" className="inline-flex items-center gap-1.5 font-medium text-rs-lime hover:text-[#dceba0]">
+              <LuArrowLeft className="size-4" aria-hidden="true" /> Cursos
+            </a>
+            <span aria-hidden="true">/</span>
+            <span className="truncate">{course.name}</span>
+          </nav>
+
+          <header className="flex flex-wrap items-end justify-between gap-5">
+            <div className="flex min-w-0 items-center gap-4">
+              <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-rs-lime font-display text-2xl font-bold text-rs-900">
+                {course.name.charAt(0).toUpperCase()}
+              </span>
+              <div className="min-w-0">
+                <h1 className="font-display text-3xl font-semibold tracking-tight text-white md:text-4xl">{course.name}</h1>
+                <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-rs-150">
+                  <span>Docente: {course.teacher.name}</span>
+                  <span>
+                    Creado el{" "}
+                    {new Date(course.createdAt).toLocaleDateString("es-ES", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </span>
+                  <span>
+                    {course.students.length} estudiante{course.students.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl md:text-4xl font-bold">
-                  {course.name}
-                </h1>
-                {(user?.role.toLowerCase() === "docente" || user?.role.toLowerCase() === "administrador") && (
-                  <button
-                    onClick={() => setShowEditCourseModal(true)}
-                    className="bg-[#ffc107] hover:bg-[#e0a800] text-black px-4 py-2 rounded-lg transition font-semibold cursor-pointer flex items-center gap-2 text-sm"
-                    title="Editar curso"
-                  >
-                    <span className=" sm:inline">Editar</span>
+            <div className="flex flex-wrap gap-2">
+              {isStaff && (
+                <button
+                  type="button"
+                  onClick={() => setShowEditCourseModal(true)}
+                  title="Editar curso"
+                  className="rs-btn border border-[#5fa383] bg-rs-800 text-white hover:bg-rs-900"
+                >
+                  <LuPencil className="size-4" aria-hidden="true" /> Editar curso
+                </button>
+              )}
+              {course.piaa_syllabus && (
+                <button type="button" onClick={handleExportPiaaToPdf} title="Exportar PIAA a PDF" className="rs-btn-accent">
+                  <LuDownload className="size-4" aria-hidden="true" /> Exportar PIAA
+                </button>
+              )}
+            </div>
+          </header>
+
+          <div role="tablist" aria-label="Secciones del curso" className="mt-6 flex gap-1 overflow-x-auto">
+            {courseTabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={courseTab === tab.id}
+                onClick={() => setCourseTab(tab.id)}
+                className={`min-h-11 cursor-pointer whitespace-nowrap rounded-t-[10px] px-5 text-[15px] transition-colors ${
+                  courseTab === tab.id ? "bg-rs-50 font-semibold text-rs-900" : "font-medium text-rs-150 hover:text-white"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-6 px-4 py-6 sm:px-6 lg:px-10">
+          {courseTab === "materiales" && (
+            <>
+              {/* Acciones del docente */}
+              {isTeacher && (
+                <section aria-labelledby="gen-title" className="flex flex-wrap gap-6 rounded-2xl border border-rs-200 bg-rs-100 p-6">
+                  <div className="flex min-w-[260px] flex-1 flex-col gap-3">
+                    <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-rs-900 px-2.5 py-1 text-xs font-semibold text-rs-lime">
+                      <LuSparkles className="size-3.5" aria-hidden="true" /> Generación con IA
+                    </span>
+                    <h2 id="gen-title" className="rs-title text-xl">
+                      Nuevo material desde una clase
+                    </h2>
+                    <p className="text-sm leading-relaxed text-[#2f4a3e]">
+                      Sube el audio de la clase: se transcribe y la IA genera resumen, quiz, glosario y checklist para que
+                      los revises antes de publicarlos.
+                    </p>
+                  </div>
+                  <div className="flex flex-[2] flex-wrap content-center gap-3">
+                    <button type="button" onClick={handleGenerateWithAI} className="rs-btn bg-rs-900 text-white hover:bg-rs-950">
+                      <LuMic className="size-4 text-rs-lime" aria-hidden="true" /> Generar material con IA
+                    </button>
+                    <button type="button" onClick={() => setShowUploadModal(true)} className="rs-btn-primary">
+                      <LuUpload className="size-4" aria-hidden="true" /> Subir materiales (PDF)
+                    </button>
+                    <button type="button" onClick={handleDownloadMaterialClick} className="rs-btn-secondary">
+                      <LuDownload className="size-4" aria-hidden="true" /> Descargar material
+                    </button>
+                    <button type="button" onClick={handleExportToPdfClick} className="rs-btn-secondary">
+                      <LuFileDown className="size-4" aria-hidden="true" /> Exportar a PDF
+                    </button>
+                  </div>
+                </section>
+              )}
+
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                {/* Materiales generados (visible para todos) */}
+                <section className="rs-card flex flex-col gap-4 p-6 xl:col-span-2">
+                  <h2 className="rs-title flex items-center gap-2 text-lg">
+                    <LuBookOpen className="size-5 text-rs-700" aria-hidden="true" /> Materiales generados
+                  </h2>
+                  <p className="text-sm text-rs-muted">
+                    Consulta el contenido generado por la IA o la lista de archivos subidos al curso.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={handleShowGeneratedContent}
+                      disabled={loadingGeneratedContent}
+                      className="rs-btn-primary"
+                    >
+                      {loadingGeneratedContent ? (
+                        <LuLoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+                      ) : (
+                        <LuSparkles className="size-4" aria-hidden="true" />
+                      )}
+                      {loadingGeneratedContent ? "Cargando..." : "Ver contenido generado"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleShowMaterialsList}
+                      disabled={loadingMaterials}
+                      className="rs-btn-secondary"
+                    >
+                      {loadingMaterials ? (
+                        <LuLoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+                      ) : (
+                        <LuFileText className="size-4" aria-hidden="true" />
+                      )}
+                      {loadingMaterials ? "Cargando..." : "Lista de materiales"}
+                    </button>
+                  </div>
+                </section>
+
+                {/* Descripción y profesor */}
+                <section className="flex flex-col gap-4 rounded-2xl bg-rs-900 p-6 text-white">
+                  <h2 className="font-display text-lg font-semibold">Sobre el curso</h2>
+                  <p className="text-sm leading-relaxed text-rs-150">{course.description}</p>
+                  <div className="mt-auto flex items-center gap-3 rounded-xl bg-rs-950 p-3">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-rs-600 font-semibold">
+                      {course.teacher.name.charAt(0).toUpperCase()}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{course.teacher.name}</p>
+                      <p className="truncate text-xs text-rs-300">{course.teacher.email}</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </>
+          )}
+
+          {courseTab === "estudiantes" && (
+            <section className="rs-card p-6">
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <h2 className="rs-title flex items-center gap-2 text-lg">
+                  <LuUsers className="size-5 text-rs-700" aria-hidden="true" /> Estudiantes inscritos
+                  <span className="rounded-full bg-rs-700 px-2.5 py-0.5 text-sm text-white">{course.students.length}</span>
+                </h2>
+                {isStaff && (
+                  <button type="button" onClick={handleOpenAddStudentsModal} className="rs-btn-primary">
+                    <LuUserPlus className="size-4" aria-hidden="true" /> Agregar estudiantes
                   </button>
                 )}
               </div>
-              <p className="text-zinc-400 text-sm mt-1">
-                Creado el {new Date(course.createdAt).toLocaleDateString('es-ES', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </p>
-            </div>
-          </div>
-        </div>
 
-        {/* Grid de información */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Descripción */}
-          <div className="bg-[#101434] p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <FaFileAlt className="text-[#6356E5]" />
-              Descripción
-            </h2>
-            <p className="text-zinc-300 leading-relaxed">{course.description}</p>
-          </div>
-
-          {/* Profesor */}
-          <div className="bg-[#101434] p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <FaUser className="text-[#6356E5]" />
-              Profesor
-            </h2>
-            <div className="space-y-2">
-              <p className="text-white font-medium text-lg">{course.teacher.name}</p>
-              <p className="text-zinc-400 text-sm">{course.teacher.email}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* PIAA Syllabus */}
-        {course.piaa_syllabus && (
-          <div className="bg-[#101434] p-6 rounded-lg shadow-lg mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <FaBook className="text-[#6356E5]" />
-                PIAA - Programa de la Asignatura
-              </h2>
-              <button
-                onClick={handleExportPiaaToPdf}
-                className="bg-[#dc3545] hover:bg-[#c82333] text-white px-4 py-2 rounded-lg transition font-semibold cursor-pointer flex items-center gap-2 text-sm"
-                title="Exportar PIAA a PDF"
-              >
-                <FaFilePdf />
-                <span className="hidden sm:inline">Exportar PDF</span>
-              </button>
-            </div>
-            <div className="bg-[#1a1a2e] p-6 rounded-lg">
-              <div 
-                className="text-zinc-300 leading-relaxed"
-                style={{
-                  fontSize: '0.95rem',
-                  lineHeight: '1.8'
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: course.piaa_syllabus
-                    // Títulos principales (sin bullets, en mayúsculas o frases interrogativas)
-                    .replace(/^([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]+)$/gm, '<h2 style="color: #6356E5; font-size: 1.3rem; font-weight: bold; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 2px solid #6356E5; padding-bottom: 0.5rem;">$1</h2>')
-                    .replace(/^(¿[^?]+\?)$/gm, '<h3 style="color: #6356E5; font-size: 1.2rem; font-weight: bold; margin-top: 1.5rem; margin-bottom: 0.8rem;">$1</h3>')
-                    
-                    // Subtítulos (comienzan con mayúscula y terminan con :)
-                    .replace(/^([A-Z][^:]+:)$/gm, '<h4 style="color: #8b7ff5; font-size: 1.05rem; font-weight: 600; margin-top: 1.2rem; margin-bottom: 0.5rem;">$1</h4>')
-                    
-                    // Items con bullets (•) - mantener como están
-                    .replace(/^•(.+)$/gm, '<div style="display: flex; margin-left: 1.5rem; margin-bottom: 0.4rem;"><span style="color: #6356E5; margin-right: 0.5rem;">•</span><span>$1</span></div>')
-                    
-                    // Items con números (R1., R2., etc) - destacar
-                    .replace(/^•?(R\d+\.)(.+)$/gm, '<div style="display: flex; margin-left: 1.5rem; margin-bottom: 0.5rem;"><span style="color: #28a745; font-weight: bold; margin-right: 0.5rem;">$1</span><span>$2</span></div>')
-                    
-                    // Objetivos específicos como subtítulo especial
-                    .replace(/(Objetivos específicos)/g, '<p style="color: #ffc107; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1rem;">$1</p>')
-                    
-                    // Información del profesor
-                    .replace(/^([A-Z][a-z]+.*\d{4})$/gm, '<p style="color: #8b7ff5; font-style: italic; margin-bottom: 0.3rem;">$1</p>')
-                    .replace(/([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})/gi, '<a href="mailto:$1" style="color: #6356E5; text-decoration: underline;">$1</a>')
-                    
-                    // Porcentajes de evaluación - destacar
-                    .replace(/^•([^:]+:\s*\d+\s*%)$/gm, '<div style="display: flex; justify-content: space-between; margin-left: 1.5rem; margin-bottom: 0.3rem; padding: 0.3rem; background: rgba(99, 86, 229, 0.1); border-radius: 4px;"><span>$1</span></div>')
-                    
-                    // Notas importantes (entre paréntesis o con "Tener en cuenta")
-                    .replace(/(Tener en cuenta:?|Nota:?)/gi, '<strong style="color: #ffc107; display: block; margin-top: 1rem;">⚠️ $1</strong>')
-                    
-                    // Saltos de línea dobles para párrafos
-                    .replace(/\n\n+/g, '</p><p style="margin-top: 0.8rem;">')
-                    // Saltos de línea simples
-                    .replace(/\n/g, '<br />')
-                    
-                    // Wrap en párrafo
-                    .replace(/^(.)/gm, '<p>$1')
-                    .replace(/$/gm, '</p>')
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Botones de acción (solo para docentes) */}
-        {user?.role.toLowerCase() === "docente" && (
-          <div className="bg-[#101434] p-6 rounded-lg shadow-lg mb-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <FaFileAlt className="text-[#6356E5]" />
-              Acciones del Docente
-            </h2>
-            <div className="flex gap-3 flex-wrap">
-              <button
-                onClick={handleGenerateWithAI}
-                className="bg-[#28a745] hover:bg-[#218838] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition font-semibold cursor-pointer flex items-center gap-2 text-sm sm:text-base"
-              >
-                <span>🤖</span> 
-                <span className="hidden sm:inline">Generar Material con IA</span>
-                <span className="sm:hidden">IA Audio</span>
-              </button>
-              <button
-                onClick={() => setShowUploadModal(true)}
-                className="bg-[#6356E5] hover:bg-[#4f48c7] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition font-semibold cursor-pointer flex items-center gap-2 text-sm sm:text-base"
-              >
-                <FaUpload />
-                <span className="hidden sm:inline">Subir Materiales (PDF)</span>
-                <span className="sm:hidden">Subir PDF</span>
-              </button>
-              <button
-                onClick={handleDownloadMaterialClick}
-                className="bg-[#17a2b8] hover:bg-[#138496] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition font-semibold cursor-pointer flex items-center gap-2 text-sm sm:text-base"
-              >
-                <FaDownload />
-                <span className="hidden sm:inline">Descargar Material</span>
-                <span className="sm:hidden">Descargar</span>
-              </button>
-              <button
-                onClick={handleExportToPdfClick}
-                className="bg-[#dc3545] hover:bg-[#c82333] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition font-semibold cursor-pointer flex items-center gap-2 text-sm sm:text-base"
-              >
-                <FaFilePdf />
-                <span className="hidden sm:inline">Exportar a PDF</span>
-                <span className="sm:hidden">Exportar</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Materiales Generados (visible para todos) */}
-        <div className="bg-[#101434] p-6 rounded-lg shadow-lg mb-6">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <FaBook className="text-[#6356E5]" />
-            Materiales Generados
-          </h2>
-          <div className="flex gap-3 flex-wrap">
-            <button
-              onClick={handleShowGeneratedContent}
-              disabled={loadingGeneratedContent}
-              className="bg-[#fd7e14] hover:bg-[#e06c00] disabled:bg-[#999] disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg transition font-semibold cursor-pointer"
-            >
-              {loadingGeneratedContent ? (
-                <span className="flex items-center justify-center gap-2">
-                  <AiOutlineLoading3Quarters className="animate-spin" />
-                  Cargando...
-                </span>
+              {course.students.length === 0 ? (
+                <p className="py-6 text-center text-rs-muted">No hay estudiantes inscritos en este curso.</p>
               ) : (
-                'Ver Contenido Generado'
+                <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {course.students.map((student) => (
+                    <li
+                      key={student._id}
+                      className="group flex items-center gap-3 rounded-xl border border-rs-line-soft bg-white p-3 transition-colors hover:border-rs-400"
+                    >
+                      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-rs-200 font-semibold text-rs-900">
+                        {student.name.charAt(0).toUpperCase()}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium text-rs-ink">{student.name}</p>
+                        <p className="truncate text-sm text-rs-muted">{student.email}</p>
+                      </div>
+                      {isStaff && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenRemoveStudentModal(student)}
+                          title="Eliminar estudiante del curso"
+                          aria-label={`Eliminar a ${student.name} del curso`}
+                          className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-lg text-rs-muted transition-colors hover:bg-rs-error-bg hover:text-rs-error"
+                        >
+                          <LuUserMinus className="size-4" aria-hidden="true" />
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               )}
-            </button>
-            <button
-              onClick={handleShowMaterialsList}
-              disabled={loadingMaterials}
-              className="bg-[#28a745] hover:bg-[#218838] disabled:bg-[#999] disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg transition font-semibold cursor-pointer flex items-center gap-2"
-            >
-              {loadingMaterials ? (
-                <>
-                  <AiOutlineLoading3Quarters className="animate-spin" />
-                  <span>Cargando...</span>
-                </>
-              ) : (
-                <>
-                  <FaFileAlt />
-                  <span>Lista de Materiales</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Lista de Estudiantes */}
-        <div className="bg-[#101434] p-6 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <FaUser className="text-[#6356E5]" />
-              Estudiantes Inscritos
-              <span className="ml-2 bg-[#6356E5] text-white text-sm px-3 py-1 rounded-full">
-                {course.students.length}
-              </span>
-            </h2>
-            
-            {/* Botón para agregar estudiantes (solo docentes y administradores) */}
-            {(user?.role.toLowerCase() === "docente" || user?.role.toLowerCase() === "administrador") && (
-              <button
-                onClick={handleOpenAddStudentsModal}
-                className="bg-[#6356E5] hover:bg-[#4f48c7] text-white px-4 py-2 rounded-lg transition font-semibold cursor-pointer flex items-center gap-2"
-              >
-                <FaUserPlus />
-                <span>Agregar Estudiantes</span>
-              </button>
-            )}
-          </div>
-          
-          {course.students.length === 0 ? (
-            <p className="text-zinc-400 text-center py-6">
-              No hay estudiantes inscritos en este curso.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {course.students.map((student) => (
-                <div
-                  key={student._id}
-                  className="bg-[#1a1a2e] p-4 rounded-lg hover:bg-[#2a2a3a] transition group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#6356E5] text-white rounded-full flex items-center justify-center font-semibold">
-                      {student.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-white font-medium">{student.name}</p>
-                      <p className="text-zinc-400 text-sm">{student.email}</p>
-                    </div>
-                    {(user?.role.toLowerCase() === "docente" || user?.role.toLowerCase() === "administrador") && (
-                      <button
-                        onClick={() => handleOpenRemoveStudentModal(student)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg cursor-pointer"
-                        title="Eliminar estudiante del curso"
-                      >
-                        <FaTimes />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+            </section>
           )}
-        </div>
 
-        {/* Información adicional */}
-        <div className="mt-6 bg-[#101434] p-4 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between text-sm text-zinc-400">
-            <div className="flex items-center gap-2">
-              <FaCalendar className="text-[#6356E5]" />
-              <span>Última actualización: {new Date(course.updatedAt).toLocaleDateString('es-ES')}</span>
-            </div>
-            <div>
-              <span>ID: {course._id}</span>
-            </div>
+          {courseTab === "piaa" && course.piaa_syllabus && (
+            <section className="rs-card p-6">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <h2 className="rs-title flex items-center gap-2 text-lg">
+                  <LuBookOpen className="size-5 text-rs-700" aria-hidden="true" /> PIAA · Programa de la asignatura
+                </h2>
+                <button type="button" onClick={handleExportPiaaToPdf} title="Exportar PIAA a PDF" className="rs-btn-secondary">
+                  <LuFileDown className="size-4" aria-hidden="true" /> Exportar PDF
+                </button>
+              </div>
+              <div className="rounded-xl border border-rs-line-soft bg-white p-6">
+                <div
+                  className="leading-relaxed text-[#23362d]"
+                  style={{
+                    fontSize: "0.95rem",
+                    lineHeight: "1.8",
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: course.piaa_syllabus
+                      // Títulos principales (sin bullets, en mayúsculas o frases interrogativas)
+                      .replace(/^([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]+)$/gm, '<h2 style="color: #12392C; font-size: 1.3rem; font-weight: bold; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 2px solid #1E6B52; padding-bottom: 0.5rem;">$1</h2>')
+                      .replace(/^(¿[^?]+\?)$/gm, '<h3 style="color: #1E6B52; font-size: 1.2rem; font-weight: bold; margin-top: 1.5rem; margin-bottom: 0.8rem;">$1</h3>')
+
+                      // Subtítulos (comienzan con mayúscula y terminan con :)
+                      .replace(/^([A-Z][^:]+:)$/gm, '<h4 style="color: #3A8A65; font-size: 1.05rem; font-weight: 600; margin-top: 1.2rem; margin-bottom: 0.5rem;">$1</h4>')
+
+                      // Items con bullets (•) - mantener como están
+                      .replace(/^•(.+)$/gm, '<div style="display: flex; margin-left: 1.5rem; margin-bottom: 0.4rem;"><span style="color: #1E6B52; margin-right: 0.5rem;">•</span><span>$1</span></div>')
+
+                      // Items con números (R1., R2., etc) - destacar
+                      .replace(/^•?(R\d+\.)(.+)$/gm, '<div style="display: flex; margin-left: 1.5rem; margin-bottom: 0.5rem;"><span style="color: #164F3D; font-weight: bold; margin-right: 0.5rem;">$1</span><span>$2</span></div>')
+
+                      // Objetivos específicos como subtítulo especial
+                      .replace(/(Objetivos específicos)/g, '<p style="color: #6B4105; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1rem;">$1</p>')
+
+                      // Información del profesor
+                      .replace(/^([A-Z][a-z]+.*\d{4})$/gm, '<p style="color: #3A8A65; font-style: italic; margin-bottom: 0.3rem;">$1</p>')
+                      .replace(/([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})/gi, '<a href="mailto:$1" style="color: #1E6B52; text-decoration: underline;">$1</a>')
+
+                      // Porcentajes de evaluación - destacar
+                      .replace(/^•([^:]+:\s*\d+\s*%)$/gm, '<div style="display: flex; justify-content: space-between; margin-left: 1.5rem; margin-bottom: 0.3rem; padding: 0.3rem; background: rgba(30, 107, 82, 0.08); border-radius: 4px;"><span>$1</span></div>')
+
+                      // Notas importantes (entre paréntesis o con "Tener en cuenta")
+                      .replace(/(Tener en cuenta:?|Nota:?)/gi, '<strong style="color: #6B4105; display: block; margin-top: 1rem;">$1</strong>')
+
+                      // Saltos de línea dobles para párrafos
+                      .replace(/\n\n+/g, '</p><p style="margin-top: 0.8rem;">')
+                      // Saltos de línea simples
+                      .replace(/\n/g, '<br />')
+
+                      // Wrap en párrafo
+                      .replace(/^(.)/gm, '<p>$1')
+                      .replace(/$/gm, '</p>'),
+                  }}
+                />
+              </div>
+            </section>
+          )}
+
+          {/* Información adicional */}
+          <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-rs-muted">
+            <span className="inline-flex items-center gap-2">
+              <LuCalendar className="size-4 text-rs-700" aria-hidden="true" />
+              Última actualización: {new Date(course.updatedAt).toLocaleDateString("es-ES")}
+            </span>
+            <span>ID: {course._id}</span>
           </div>
         </div>
       </main>
@@ -755,254 +840,69 @@ function CourseViewPageContent() {
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      {/* Modal Lista de Contenidos Generados */}
+      {/* Modal lista de contenidos generados */}
       {showGeneratedContentListModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#101434] rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-auto">
-            <div className="sticky top-0 bg-[#0f0f2e] border-b border-[#2a2a4a] px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-white">Contenidos Generados - {course?.name}</h2>
-              <button
-                onClick={() => {
-                  setShowGeneratedContentListModal(false);
-                  setGeneratedContentsList([]);
-                }}
-                className="text-white/60 hover:text-white text-2xl transition cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="p-6">
-              {generatedContentsList.length > 0 ? (
-                <div className="space-y-3">
-                  {generatedContentsList.map((content: any, index: number) => (
-                    <div
-                      key={content._id}
-                      onClick={() => handleSelectGeneratedContent(content, index)}
-                      className="bg-[#0a0a1f] rounded-lg px-4 py-4 border border-[#2a2a4a] hover:border-[#6356E5] cursor-pointer transition flex items-center justify-between group"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="bg-[#6356E5] text-white font-bold px-3 py-1 rounded-full text-sm">
-                            #{index + 1}
-                          </span>
-                          <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                            content.estado === 'PUBLICADO'
-                              ? 'bg-[#28a745] text-white'
-                              : content.estado === 'PENDIENTE_REVISION'
-                              ? 'bg-[#ffc107] text-black'
-                              : 'bg-[#6c757d] text-white'
-                          }`}>
-                            {content.estado}
-                          </span>
-                        </div>
-                        <p className="text-white/80 text-sm">
-                          Generado: {new Date(content.createdAt).toLocaleDateString('es-ES', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                        <div className="flex gap-4 mt-2 text-sm text-white/60">
-                          <span>📝 Resumen: {content.resumen ? '✓' : '✗'}</span>
-                          <span>📚 Glosario: {content.glosario?.length || 0}</span>
-                          <span>❓ Quiz: {content.quiz?.length || 0}</span>
-                          <span>✓ Checklist: {content.checklist?.length || 0}</span>
-                        </div>
-                      </div>
-                      <div className="text-[#6356E5] group-hover:translate-x-1 transition">
-                        →
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-white/60 text-center py-8">
-                  No hay contenido por este momento
-                </div>
-              )}
-            </div>
-
-            <div className="bg-[#0f0f2e] border-t border-[#2a2a4a] px-6 py-4 flex justify-end gap-2">
-              <button
-                onClick={() => {
-                  setShowGeneratedContentListModal(false);
-                  setGeneratedContentsList([]);
-                }}
-                className="bg-[#35448e] hover:bg-[#2a3670] text-white px-4 py-2 rounded-lg transition font-medium cursor-pointer"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
+        <Modal
+          size="md"
+          title={`Contenidos generados · ${course?.name}`}
+          onClose={() => {
+            setShowGeneratedContentListModal(false);
+            setGeneratedContentsList([]);
+          }}
+          footer={
+            <button
+              type="button"
+              onClick={() => {
+                setShowGeneratedContentListModal(false);
+                setGeneratedContentsList([]);
+              }}
+              className="rs-btn-secondary ml-auto"
+            >
+              Cerrar
+            </button>
+          }
+        >
+          <GeneratedContentList items={generatedContentsList} onSelect={handleSelectGeneratedContent} />
+        </Modal>
       )}
 
-      {/* Modal Contenido Generado */}
+      {/* Modal contenido generado */}
       {showGeneratedContentModal && selectedGeneratedContent && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#101434] rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
-            <div className="sticky top-0 bg-[#0f0f2e] border-b border-[#2a2a4a] px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="bg-[#6356E5] text-white font-bold px-3 py-1 rounded-full text-sm">
-                  #{selectedGeneratedContent.index}
-                </span>
-                <h2 className="text-xl font-semibold text-white">{selectedGeneratedContent.name}</h2>
-              </div>
-              <button
-                onClick={() => {
-                  setShowGeneratedContentModal(false);
-                  setSelectedGeneratedContent(null);
-                }}
-                className="text-white/60 hover:text-white text-2xl transition cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-            
-            {/* Tabs */}
-            <div className="sticky top-0 bg-[#0f0f2e] border-b border-[#2a2a4a] px-6 flex gap-2 overflow-x-auto">
-              <button
-                onClick={() => setSelectedTab("resumen")}
-                className={`px-4 py-3 font-medium transition border-b-2 whitespace-nowrap ${
-                  selectedTab === "resumen"
-                    ? "border-[#6356E5] text-[#6356E5]"
-                    : "border-transparent text-white/60 hover:text-white"
-                }`}
-              >
-                Resumen
-              </button>
-              <button
-                onClick={() => setSelectedTab("glosario")}
-                className={`px-4 py-3 font-medium transition border-b-2 whitespace-nowrap ${
-                  selectedTab === "glosario"
-                    ? "border-[#6356E5] text-[#6356E5]"
-                    : "border-transparent text-white/60 hover:text-white"
-                }`}
-              >
-                Glosario ({selectedGeneratedContent.glosario.length})
-              </button>
-              <button
-                onClick={() => setSelectedTab("quiz")}
-                className={`px-4 py-3 font-medium transition border-b-2 whitespace-nowrap ${
-                  selectedTab === "quiz"
-                    ? "border-[#6356E5] text-[#6356E5]"
-                    : "border-transparent text-white/60 hover:text-white"
-                }`}
-              >
-                Quiz ({selectedGeneratedContent.quiz.length})
-              </button>
-              <button
-                onClick={() => setSelectedTab("checklist")}
-                className={`px-4 py-3 font-medium transition border-b-2 whitespace-nowrap ${
-                  selectedTab === "checklist"
-                    ? "border-[#6356E5] text-[#6356E5]"
-                    : "border-transparent text-white/60 hover:text-white"
-                }`}
-              >
-                Checklist ({selectedGeneratedContent.checklist.length})
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6">
-              {selectedTab === "resumen" && (
-                <div className="text-white whitespace-pre-wrap break-words bg-[#0a0a1f] rounded px-4 py-3 border border-[#2a2a4a]">
-                  {selectedGeneratedContent.resumen}
-                </div>
-              )}
-              
-              {selectedTab === "glosario" && (
-                <div>
-                  {selectedGeneratedContent.glosario.length > 0 ? (
-                    <div className="space-y-3">
-                      {selectedGeneratedContent.glosario.map((item: any, index: number) => (
-                        <div key={index} className="bg-[#0a0a1f] rounded px-4 py-3 border border-[#2a2a4a]">
-                          <p className="text-white font-semibold">{item.term || item.termino || `Término ${index + 1}`}</p>
-                          <p className="text-white/80 text-sm mt-1">{item.definition || item.definicion || item.description || "Sin definición"}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-white/60 text-center py-8">No hay elementos en el glosario</div>
-                  )}
-                </div>
-              )}
-              
-              {selectedTab === "quiz" && (
-                <div>
-                  {selectedGeneratedContent.quiz.length > 0 ? (
-                    <div className="space-y-4">
-                      {selectedGeneratedContent.quiz.map((item: any, index: number) => (
-                        <div key={index} className="bg-[#0a0a1f] rounded px-4 py-3 border border-[#2a2a4a]">
-                          <p className="text-white font-semibold mb-2">{index + 1}. {item.pregunta || item.question || `Pregunta ${index + 1}`}</p>
-                          {item.opciones && Array.isArray(item.opciones) && (
-                            <div className="space-y-2 ml-4">
-                              {item.opciones.map((opcion: string, optIndex: number) => (
-                                <div key={optIndex} className="text-white/80 text-sm">
-                                  <span className="text-[#6356E5]">{"ABCD"[optIndex]}</span> - {opcion}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          {item.respuesta && (
-                            <p className="text-[#28a745] text-sm mt-2">Respuesta: {item.respuesta}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-white/60 text-center py-8">No hay preguntas en el quiz</div>
-                  )}
-                </div>
-              )}
-              
-              {selectedTab === "checklist" && (
-                <div>
-                  {selectedGeneratedContent.checklist.length > 0 ? (
-                    <div className="space-y-2">
-                      {selectedGeneratedContent.checklist.map((item: any, index: number) => (
-                        <div key={index} className="bg-[#0a0a1f] rounded px-4 py-3 border border-[#2a2a4a] flex items-start gap-3">
-                          <input
-                            type="checkbox"
-                            disabled
-                            defaultChecked={item.completado || item.completed || false}
-                            className="mt-1 cursor-not-allowed"
-                          />
-                          <div>
-                            <p className="text-white">{item.tarea || item.item || `Tarea ${index + 1}`}</p>
-                            {item.descripcion && (
-                              <p className="text-white/60 text-sm">{item.descripcion}</p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-white/60 text-center py-8">No hay elementos en el checklist</div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="bg-[#0f0f2e] border-t border-[#2a2a4a] px-6 py-4 flex justify-end gap-2">
-              <button
-                onClick={() => {
-                  setShowGeneratedContentModal(false);
-                  setSelectedGeneratedContent(null);
-                }}
-                className="bg-[#35448e] hover:bg-[#2a3670] text-white px-4 py-2 rounded-lg transition font-medium cursor-pointer"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
+        <Modal
+          title={
+            <span className="flex items-center gap-3">
+              <span className="rounded-full bg-rs-lime px-2.5 py-1 text-xs font-bold text-rs-950">
+                #{selectedGeneratedContent.index}
+              </span>
+              <span className="truncate">{selectedGeneratedContent.name}</span>
+              <StatusChip estado={selectedGeneratedContent.estado} />
+            </span>
+          }
+          onClose={() => {
+            setShowGeneratedContentModal(false);
+            setSelectedGeneratedContent(null);
+          }}
+          toolbar={
+            <GeneratedContentTabs content={selectedGeneratedContent} tab={selectedTab} onTabChange={setSelectedTab} />
+          }
+          footer={
+            <button
+              type="button"
+              onClick={() => {
+                setShowGeneratedContentModal(false);
+                setSelectedGeneratedContent(null);
+              }}
+              className="rs-btn-secondary ml-auto"
+            >
+              Cerrar
+            </button>
+          }
+        >
+          <GeneratedContentBody content={selectedGeneratedContent} tab={selectedTab} />
+        </Modal>
       )}
 
-      {/* Modal de Subir Material */}
+      {/* Modal de subir material */}
       {courseId && (
         <UploadMaterialModal
           isOpen={showUploadModal}
@@ -1012,484 +912,209 @@ function CourseViewPageContent() {
         />
       )}
 
-      {/* Modal: Lista General de Materiales */}
+      {/* Modal: lista general de materiales */}
       {showMaterialsListModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#101434] p-6 rounded-lg shadow-xl max-w-3xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <FaFileAlt className="text-[#6356E5]" />
-                Lista de Materiales
-              </h2>
-              <button
-                onClick={() => setShowMaterialsListModal(false)}
-                className="text-white/60 hover:text-white text-2xl transition cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {loadingMaterials ? (
-              <div className="flex justify-center py-8">
-                <AiOutlineLoading3Quarters className="animate-spin text-4xl text-[#6356E5]" />
-              </div>
-            ) : materialsForCourse.length > 0 ? (
-              <div className="space-y-3">
-                {materialsForCourse.map((material, index) => {
-                  const materialId = material._id?.toString() || material._id || String(material._id) || material.id;
-                  return (
-                  <div
-                    key={materialId || `material-${index}`}
-                    className="bg-[#1a1a2e] p-4 rounded-lg border border-[#333] hover:border-[#6356E5] transition"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="bg-[#6356E5] text-white font-bold px-3 py-1 rounded-full text-sm">
-                            #{index + 1}
-                          </span>
-                          <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                            material.status === 'READY'
-                              ? 'bg-[#28a745] text-white'
-                              : material.status === 'PENDING'
-                              ? 'bg-[#ffc107] text-black'
-                              : 'bg-[#6c757d] text-white'
-                          }`}>
-                            {material.status || 'N/A'}
-                          </span>
-                          <span className="text-xs bg-[#1a1a3e] text-white/70 px-2 py-1 rounded">
-                            {material.type || 'PDF'}
-                          </span>
-                        </div>
-                        <p className="text-white font-medium text-base mb-2">
-                          📄 {material.filename || material.originalName || `Material ${index + 1}`}
-                        </p>
-                        {material.description && (
-                          <p className="text-white/70 text-sm mb-2">
-                            {material.description}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-4 text-xs text-white/60">
-                          <span>📦 Tamaño: {material.size ? `${(material.size / 1024).toFixed(2)} KB` : 'N/A'}</span>
-                          <span>☁️ {material.storageProvider || 'N/A'}</span>
-                          <span>📅 {new Date(material.createdAt).toLocaleDateString('es-ES')}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-zinc-400 text-center py-8">
-                No hay materiales disponibles para este curso.
-              </p>
-            )}
-
-            <button
-              onClick={() => setShowMaterialsListModal(false)}
-              className="mt-6 bg-[#6356E5] hover:bg-[#4f48c7] text-white px-6 py-2 rounded-lg transition font-semibold cursor-pointer w-full"
-            >
+        <Modal
+          title="Lista de materiales"
+          onClose={() => setShowMaterialsListModal(false)}
+          footer={
+            <button type="button" onClick={() => setShowMaterialsListModal(false)} className="rs-btn-secondary ml-auto">
               Cerrar
             </button>
-          </div>
-        </div>
+          }
+        >
+          {renderMaterialsBody("No hay materiales disponibles para este curso.")}
+        </Modal>
       )}
 
-      {/* Modal: Seleccionar Material para Descargar */}
+      {/* Modal: seleccionar material para descargar */}
       {showDownloadMaterialModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#101434] p-6 rounded-lg shadow-xl max-w-3xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <FaDownload className="text-[#17a2b8]" />
-                Seleccionar Material para Descargar
-              </h2>
-              <button
-                onClick={() => setShowDownloadMaterialModal(false)}
-                className="text-white/60 hover:text-white text-2xl transition cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {loadingMaterials ? (
-              <div className="flex justify-center py-8">
-                <AiOutlineLoading3Quarters className="animate-spin text-4xl text-[#6356E5]" />
-              </div>
-            ) : materialsForCourse.length > 0 ? (
-              <div className="space-y-3">
-                {materialsForCourse.map((material, index) => {
-                  // Intentar obtener el _id de diferentes maneras (Mongoose puede tenerlo como getter)
-                  const materialId = material._id?.toString() || material._id || String(material._id) || material.id;
-                  console.log('Material en descarga:', { 
-                    id: materialId, 
-                    _id: material._id,
-                    _idType: typeof material._id,
-                    keys: Object.keys(material),
-                    material 
-                  });
-                  return (
-                  <div
-                    key={materialId || `download-material-${index}`}
-                    onClick={() => {
-                      console.log('Click en material:', materialId);
-                      handleDownloadMaterial(materialId, material.filename || material.originalName || `Material-${index + 1}`);
-                    }}
-                    className="bg-[#1a1a2e] p-4 rounded-lg border border-[#333] hover:border-[#17a2b8] transition cursor-pointer group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="bg-[#6356E5] text-white font-bold px-3 py-1 rounded-full text-sm">
-                            #{index + 1}
-                          </span>
-                          <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                            material.status === 'READY'
-                              ? 'bg-[#28a745] text-white'
-                              : material.status === 'PENDING'
-                              ? 'bg-[#ffc107] text-black'
-                              : 'bg-[#6c757d] text-white'
-                          }`}>
-                            {material.status || 'N/A'}
-                          </span>
-                          <span className="text-xs bg-[#1a1a3e] text-white/70 px-2 py-1 rounded">
-                            {material.type || 'PDF'}
-                          </span>
-                        </div>
-                        <p className="text-white font-medium text-base mb-2">
-                          📄 {material.filename || material.originalName || `Material ${index + 1}`}
-                        </p>
-                        {material.description && (
-                          <p className="text-white/70 text-sm mb-2">
-                            {material.description}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-4 text-xs text-white/60">
-                          <span>📦 {material.size ? `${(material.size / 1024).toFixed(2)} KB` : 'N/A'}</span>
-                          <span>☁️ {material.storageProvider || 'N/A'}</span>
-                        </div>
-                      </div>
-                      <FaDownload className="text-[#17a2b8] text-xl group-hover:scale-110 transition" />
-                    </div>
-                  </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-zinc-400 text-center py-8">
-                No hay materiales disponibles para descargar.
-              </p>
-            )}
-
-            <button
-              onClick={() => setShowDownloadMaterialModal(false)}
-              className="mt-6 bg-zinc-700 hover:bg-zinc-600 text-white px-6 py-2 rounded-lg transition font-semibold cursor-pointer w-full"
-            >
+        <Modal
+          title="Seleccionar material para descargar"
+          onClose={() => setShowDownloadMaterialModal(false)}
+          footer={
+            <button type="button" onClick={() => setShowDownloadMaterialModal(false)} className="rs-btn-ghost ml-auto">
               Cancelar
             </button>
-          </div>
-        </div>
+          }
+        >
+          {renderMaterialsBody("No hay materiales disponibles para descargar.", (material, index) => ({
+            icon: <LuDownload className="size-5" aria-label="Descargar" />,
+            onClick: () => handleDownloadMaterial(materialId(material), material.filename || material.originalName || `Material-${index + 1}`),
+          }))}
+        </Modal>
       )}
 
-      {/* Modal: Confirmar Eliminación de Estudiante */}
+      {/* Modal: confirmar eliminación de estudiante */}
       {showRemoveStudentModal && studentToRemove && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#101434] p-6 rounded-lg shadow-xl max-w-md w-full">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <FaUserMinus className="text-red-500" />
-                Eliminar Estudiante
-              </h2>
+        <Modal
+          size="md"
+          title="Eliminar estudiante"
+          closeDisabled={removingStudent}
+          onClose={() => {
+            setShowRemoveStudentModal(false);
+            setStudentToRemove(null);
+          }}
+          footer={
+            <>
               <button
+                type="button"
                 onClick={() => {
                   setShowRemoveStudentModal(false);
                   setStudentToRemove(null);
                 }}
                 disabled={removingStudent}
-                className="text-white/60 hover:text-white text-2xl transition cursor-pointer disabled:opacity-50"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="mb-6">
-              <p className="text-white/80 mb-4">
-                ¿Estás seguro de que deseas eliminar a este estudiante del curso?
-              </p>
-              <div className="bg-[#1a1a2e] p-4 rounded-lg border border-red-500/30">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-[#6356E5] text-white rounded-full flex items-center justify-center font-semibold text-lg">
-                    {studentToRemove.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">{studentToRemove.name}</p>
-                    <p className="text-white/60 text-sm">{studentToRemove.email}</p>
-                  </div>
-                </div>
-              </div>
-              <p className="text-yellow-400 text-sm mt-4">
-                ⚠️ Esta acción eliminará al estudiante del curso pero no eliminará su cuenta.
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={handleRemoveStudent}
-                disabled={removingStudent}
-                className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg transition font-semibold cursor-pointer flex items-center justify-center gap-2"
-              >
-                {removingStudent ? (
-                  <>
-                    <AiOutlineLoading3Quarters className="animate-spin" />
-                    <span>Eliminando...</span>
-                  </>
-                ) : (
-                  <>
-                    <FaUserMinus />
-                    <span>Eliminar</span>
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => {
-                  setShowRemoveStudentModal(false);
-                  setStudentToRemove(null);
-                }}
-                disabled={removingStudent}
-                className="bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white px-6 py-3 rounded-lg transition font-semibold cursor-pointer"
+                className="rs-btn-ghost"
               >
                 Cancelar
               </button>
+              <button type="button" onClick={handleRemoveStudent} disabled={removingStudent} className="rs-btn-danger">
+                {removingStudent ? (
+                  <LuLoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <LuUserMinus className="size-4" aria-hidden="true" />
+                )}
+                {removingStudent ? "Eliminando..." : "Eliminar"}
+              </button>
+            </>
+          }
+        >
+          <p className="mb-4 text-rs-ink">¿Estás seguro de que deseas eliminar a este estudiante del curso?</p>
+          <div className="flex items-center gap-3 rounded-xl border border-rs-error/30 bg-white p-4">
+            <span className="grid size-12 shrink-0 place-items-center rounded-full bg-rs-200 text-lg font-semibold text-rs-900">
+              {studentToRemove.name.charAt(0).toUpperCase()}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate font-medium text-rs-ink">{studentToRemove.name}</p>
+              <p className="truncate text-sm text-rs-muted">{studentToRemove.email}</p>
             </div>
           </div>
-        </div>
+          <p className="mt-4 flex items-start gap-2 rounded-lg bg-rs-warn-bg px-3 py-2 text-sm text-rs-warn">
+            <LuCircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            Esta acción eliminará al estudiante del curso pero no eliminará su cuenta.
+          </p>
+        </Modal>
       )}
 
-      {/* Modal: Agregar Estudiantes */}
+      {/* Modal: agregar estudiantes */}
       {showAddStudentsModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#101434] p-6 rounded-lg shadow-xl max-w-3xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <FaUserPlus className="text-[#6356E5]" />
-                Agregar Estudiantes al Curso
-              </h2>
+        <Modal
+          title="Agregar estudiantes al curso"
+          closeDisabled={addingStudents}
+          onClose={() => {
+            setShowAddStudentsModal(false);
+            setSelectedStudents([]);
+            setAvailableStudents([]);
+          }}
+          footer={
+            <>
               <button
+                type="button"
                 onClick={() => {
                   setShowAddStudentsModal(false);
                   setSelectedStudents([]);
                   setAvailableStudents([]);
                 }}
-                className="text-white/60 hover:text-white text-2xl transition cursor-pointer"
+                disabled={addingStudents}
+                className="rs-btn-ghost"
               >
-                ✕
+                {availableStudents.length > 0 ? "Cancelar" : "Cerrar"}
               </button>
+              {availableStudents.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleAddStudents}
+                  disabled={addingStudents || selectedStudents.length === 0}
+                  className="rs-btn-primary"
+                >
+                  {addingStudents ? (
+                    <LuLoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <LuUserPlus className="size-4" aria-hidden="true" />
+                  )}
+                  {addingStudents
+                    ? "Agregando..."
+                    : `Agregar ${selectedStudents.length > 0 ? `(${selectedStudents.length})` : ""}`}
+                </button>
+              )}
+            </>
+          }
+        >
+          {loadingStudents ? (
+            <div className="flex justify-center py-8">
+              <LuLoaderCircle className="size-10 animate-spin text-rs-700" aria-hidden="true" />
             </div>
-
-            {loadingStudents ? (
-              <div className="flex justify-center py-8">
-                <AiOutlineLoading3Quarters className="animate-spin text-4xl text-[#6356E5]" />
-              </div>
-            ) : availableStudents.length > 0 ? (
-              <>
-                <div className="mb-4 p-3 bg-[#1a1a2e] rounded-lg">
-                  <p className="text-white/80 text-sm">
-                    Selecciona los estudiantes que deseas agregar al curso.
-                    <span className="ml-2 text-[#6356E5] font-semibold">
-                      {selectedStudents.length} seleccionado(s)
-                    </span>
-                  </p>
-                </div>
-
-                <div className="space-y-2 mb-4">
-                  {availableStudents.map((student) => (
-                    <div
-                      key={student._id}
-                      onClick={() => handleToggleStudent(student._id)}
-                      className={`p-4 rounded-lg border-2 transition cursor-pointer ${
-                        selectedStudents.includes(student._id)
-                          ? 'border-[#6356E5] bg-[#6356E5]/10'
-                          : 'border-[#333] bg-[#1a1a2e] hover:border-[#6356E5]/50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
+          ) : availableStudents.length > 0 ? (
+            <>
+              <p className="mb-4 rounded-lg bg-rs-100 px-3 py-2 text-sm text-rs-900">
+                Selecciona los estudiantes que deseas agregar al curso.
+                <span className="ml-2 font-semibold text-rs-700">{selectedStudents.length} seleccionado(s)</span>
+              </p>
+              <ul className="space-y-2">
+                {availableStudents.map((student) => {
+                  const checked = selectedStudents.includes(student._id);
+                  return (
+                    <li key={student._id}>
+                      <label
+                        className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition-colors ${
+                          checked ? "border-rs-700 bg-rs-100" : "border-rs-line bg-white hover:border-rs-400"
+                        }`}
+                      >
                         <input
                           type="checkbox"
-                          checked={selectedStudents.includes(student._id)}
-                          onChange={() => {}}
-                          className="w-5 h-5 cursor-pointer accent-[#6356E5]"
+                          checked={checked}
+                          onChange={() => handleToggleStudent(student._id)}
+                          className="size-5 cursor-pointer accent-rs-700"
                         />
-                        <div className="w-10 h-10 bg-[#6356E5] text-white rounded-full flex items-center justify-center font-semibold">
+                        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-rs-200 font-semibold text-rs-900">
                           {student.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-white font-medium">{student.name}</p>
-                          <p className="text-white/60 text-sm">{student.email}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleAddStudents}
-                    disabled={addingStudents || selectedStudents.length === 0}
-                    className="flex-1 bg-[#6356E5] hover:bg-[#4f48c7] disabled:bg-zinc-700 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg transition font-semibold cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    {addingStudents ? (
-                      <>
-                        <AiOutlineLoading3Quarters className="animate-spin" />
-                        <span>Agregando...</span>
-                      </>
-                    ) : (
-                      <>
-                        <FaUserPlus />
-                        <span>Agregar {selectedStudents.length > 0 ? `(${selectedStudents.length})` : ''}</span>
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowAddStudentsModal(false);
-                      setSelectedStudents([]);
-                      setAvailableStudents([]);
-                    }}
-                    disabled={addingStudents}
-                    className="bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white px-6 py-3 rounded-lg transition font-semibold cursor-pointer"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-zinc-400 mb-4">
-                  No hay estudiantes disponibles para agregar a este curso.
-                </p>
-                <p className="text-zinc-500 text-sm">
-                  Todos los estudiantes ya están inscritos o no hay estudiantes registrados en el sistema.
-                </p>
-                <button
-                  onClick={() => {
-                    setShowAddStudentsModal(false);
-                    setSelectedStudents([]);
-                    setAvailableStudents([]);
-                  }}
-                  className="mt-4 bg-zinc-700 hover:bg-zinc-600 text-white px-6 py-2 rounded-lg transition font-semibold cursor-pointer"
-                >
-                  Cerrar
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Seleccionar Material para Exportar a PDF */}
-      {showExportMaterialModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#101434] p-6 rounded-lg shadow-xl max-w-3xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <FaFilePdf className="text-[#dc3545]" />
-                Seleccionar Material para Exportar a PDF
-              </h2>
-              <button
-                onClick={() => setShowExportMaterialModal(false)}
-                className="text-white/60 hover:text-white text-2xl transition cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {loadingMaterials ? (
-              <div className="flex justify-center py-8">
-                <AiOutlineLoading3Quarters className="animate-spin text-4xl text-[#6356E5]" />
-              </div>
-            ) : materialsForCourse.length > 0 ? (
-              <div className="space-y-3">
-                {materialsForCourse.map((material, index) => {
-                  // Intentar obtener el _id de diferentes maneras (Mongoose puede tenerlo como getter)
-                  const materialId = material._id?.toString() || material._id || String(material._id) || material.id;
-                  console.log('Material en exportar:', { 
-                    id: materialId, 
-                    _id: material._id,
-                    _idType: typeof material._id,
-                    keys: Object.keys(material),
-                    material 
-                  });
-                  return (
-                  <div
-                    key={materialId || `export-material-${index}`}
-                    onClick={() => {
-                      console.log('Click en exportar:', materialId);
-                      handleExportToPdf(materialId, material.filename || material.originalName || `Material-${index + 1}`);
-                    }}
-                    className="bg-[#1a1a2e] p-4 rounded-lg border border-[#333] hover:border-[#dc3545] transition cursor-pointer group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="bg-[#6356E5] text-white font-bold px-3 py-1 rounded-full text-sm">
-                            #{index + 1}
-                          </span>
-                          <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                            material.status === 'READY'
-                              ? 'bg-[#28a745] text-white'
-                              : material.status === 'PENDING'
-                              ? 'bg-[#ffc107] text-black'
-                              : 'bg-[#6c757d] text-white'
-                          }`}>
-                            {material.status || 'N/A'}
-                          </span>
-                          <span className="text-xs bg-[#1a1a3e] text-white/70 px-2 py-1 rounded">
-                            {material.type || 'PDF'}
-                          </span>
-                        </div>
-                        <p className="text-white font-medium text-base mb-2">
-                          📄 {material.filename || material.originalName || `Material ${index + 1}`}
-                        </p>
-                        {material.description && (
-                          <p className="text-white/70 text-sm mb-2">
-                            {material.description}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-4 text-xs text-white/60">
-                          <span>📦 {material.size ? `${(material.size / 1024).toFixed(2)} KB` : 'N/A'}</span>
-                          <span>☁️ {material.storageProvider || 'N/A'}</span>
-                        </div>
-                      </div>
-                      <FaFilePdf className="text-[#dc3545] text-xl group-hover:scale-110 transition" />
-                    </div>
-                  </div>
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium text-rs-ink">{student.name}</span>
+                          <span className="block truncate text-sm text-rs-muted">{student.email}</span>
+                        </span>
+                      </label>
+                    </li>
                   );
                 })}
-              </div>
-            ) : (
-              <p className="text-zinc-400 text-center py-8">
-                No hay materiales disponibles para exportar.
+              </ul>
+            </>
+          ) : (
+            <div className="py-8 text-center">
+              <p className="mb-2 text-rs-ink">No hay estudiantes disponibles para agregar a este curso.</p>
+              <p className="text-sm text-rs-muted">
+                Todos los estudiantes ya están inscritos o no hay estudiantes registrados en el sistema.
               </p>
-            )}
-
-            <button
-              onClick={() => setShowExportMaterialModal(false)}
-              className="mt-6 bg-zinc-700 hover:bg-zinc-600 text-white px-6 py-2 rounded-lg transition font-semibold cursor-pointer w-full"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
+            </div>
+          )}
+        </Modal>
       )}
 
-      {/* Modal de Editar Curso */}
+      {/* Modal: seleccionar material para exportar a PDF */}
+      {showExportMaterialModal && (
+        <Modal
+          title="Seleccionar material para exportar a PDF"
+          onClose={() => setShowExportMaterialModal(false)}
+          footer={
+            <button type="button" onClick={() => setShowExportMaterialModal(false)} className="rs-btn-ghost ml-auto">
+              Cancelar
+            </button>
+          }
+        >
+          {renderMaterialsBody("No hay materiales disponibles para exportar.", (material, index) => ({
+            icon: <LuFileDown className="size-5" aria-label="Exportar a PDF" />,
+            onClick: () => handleExportToPdf(materialId(material), material.filename || material.originalName || `Material-${index + 1}`),
+          }))}
+        </Modal>
+      )}
+
+      {/* Modal de editar curso */}
       {courseId && (
         <EditCourseModal
           isOpen={showEditCourseModal}
           onClose={() => setShowEditCourseModal(false)}
           onSuccess={async () => {
-            setToast({ message: 'Curso actualizado exitosamente', type: 'success' });
+            setToast({ message: "Curso actualizado exitosamente", type: "success" });
             // Recargar el curso para mostrar los cambios
             if (courseId) {
               const updatedCourse = await getCourseById(courseId);
@@ -1505,13 +1130,7 @@ function CourseViewPageContent() {
 
 export default function CourseViewPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#050214] text-white">
-          Cargando curso...
-        </div>
-      }
-    >
+    <Suspense fallback={<LoadingScreen label="Cargando curso..." />}>
       <CourseViewPageContent />
     </Suspense>
   );

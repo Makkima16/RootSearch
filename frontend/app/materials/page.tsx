@@ -5,8 +5,20 @@ import SideBar from '@/components/SideBar';
 import { getUserProfile } from '@/services/users';
 import { getAllCourses, getAllCoursesForAdmin } from '@/services/courses';
 import { getMaterialsByCourse, uploadAudioAndGenerate, updateMaterial, publishMaterial } from '@/services/materials';
-import { AiOutlineLoading3Quarters, AiOutlineCloudUpload, AiOutlineEdit, AiOutlineEye, AiOutlineCheck } from 'react-icons/ai';
-import { FaBook, FaFileAudio } from 'react-icons/fa';
+import {
+  LuCheck,
+  LuEye,
+  LuFileAudio,
+  LuLoaderCircle,
+  LuPencil,
+  LuPlus,
+  LuSave,
+  LuSparkles,
+  LuSquare,
+  LuTrash2,
+  LuUpload,
+} from 'react-icons/lu';
+import { EmptyState, LoadingScreen, Modal, PageHeader, StatusChip, Tabs } from '@/components/ui';
 import Toast from "@/components/Toast";
 
 export default function MaterialsPage() {
@@ -148,431 +160,433 @@ export default function MaterialsPage() {
     }
   };
 
-  if (!user) return <div className="min-h-screen bg-[#040418] flex items-center justify-center text-white">Cargando...</div>;
+
+  if (!user) return <LoadingScreen />;
+
+  const canEdit = user.role === 'docente' || user.role === 'administrador';
+  const fieldClass =
+    'w-full rounded-lg border border-rs-input bg-white px-3 py-2 text-rs-ink focus:border-rs-700 focus:outline-2 focus:outline-rs-700';
+  const removeButton = (onClick: () => void, label: string) => (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg text-rs-error hover:bg-rs-error-bg"
+    >
+      <LuTrash2 className="size-4" aria-hidden="true" />
+    </button>
+  );
 
   return (
-    <div className="flex min-h-screen bg-[#040418] text-white font-sans">
+    <div className="flex min-h-screen flex-col bg-rs-50 font-sans text-rs-ink lg:flex-row">
       <SideBar user={user} />
-      <main className="flex-1 p-8 overflow-y-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold flex items-center gap-2 mb-4">
-            <FaBook className="text-[#6356E5]" /> Materiales Generados con IA
-          </h1>
-          
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-[#101434] p-4 rounded-lg">
-            <div className="w-full md:w-1/3">
-              <label className="block text-sm text-gray-400 mb-1">Seleccionar Curso</label>
-              <select 
-                value={selectedCourse}
-                onChange={(e) => setSelectedCourse(e.target.value)}
-                className="w-full p-2 bg-[#1a1a2e] border border-gray-700 rounded text-white focus:outline-none focus:border-[#6356E5]"
-              >
-                {courses.map(course => (
-                  <option key={course._id} value={course._id}>{course.name}</option>
-                ))}
-              </select>
-            </div>
+      <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 lg:px-10">
+        <PageHeader
+          icon={LuSparkles}
+          title="Materiales generados con IA"
+          subtitle="Revisa, edita y publica el contenido generado a partir de las clases."
+        />
 
-            {(user.role === 'docente' || user.role === 'administrador') && (
-              <div className="w-full md:w-auto">
-                <label 
-                  className={`flex items-center justify-center gap-2 px-4 py-2 rounded cursor-pointer transition ${uploading ? 'bg-gray-600 cursor-not-allowed' : 'bg-[#6356E5] hover:bg-[#4f48c7]'}`}
-                >
-                  {uploading ? <AiOutlineLoading3Quarters className="animate-spin" /> : <AiOutlineCloudUpload className="text-xl" />}
-                  <span>{uploading ? 'Procesando...' : 'Subir Audio de Clase'}</span>
-                  <input 
-                    type="file" 
-                    accept="audio/*" 
-                    className="hidden" 
-                    onChange={handleUploadAudio}
-                    disabled={uploading}
-                  />
-                </label>
-              </div>
-            )}
+        <div className="rs-card mb-8 flex flex-col items-stretch gap-4 p-4 md:flex-row md:items-end md:justify-between">
+          <div className="w-full md:w-1/3">
+            <label htmlFor="course-select" className="rs-label">
+              Seleccionar curso
+            </label>
+            <select
+              id="course-select"
+              value={selectedCourse}
+              onChange={(e) => setSelectedCourse(e.target.value)}
+              className="rs-input cursor-pointer"
+            >
+              {courses.map(course => (
+                <option key={course._id} value={course._id}>{course.name}</option>
+              ))}
+            </select>
           </div>
+
+          {canEdit && (
+            <label
+              className={`rs-btn w-full md:w-auto ${
+                uploading ? 'cursor-not-allowed bg-rs-400 text-white' : 'bg-rs-900 text-white hover:bg-rs-950'
+              }`}
+            >
+              {uploading ? (
+                <LuLoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <LuUpload className="size-4 text-rs-lime" aria-hidden="true" />
+              )}
+              <span>{uploading ? 'Procesando...' : 'Subir audio de clase'}</span>
+              <input
+                type="file"
+                accept="audio/*"
+                className="hidden"
+                onChange={handleUploadAudio}
+                disabled={uploading}
+              />
+            </label>
+          )}
         </div>
 
         {loading ? (
           <div className="flex justify-center py-10">
-            <AiOutlineLoading3Quarters className="animate-spin text-4xl text-[#6356E5]" />
+            <LuLoaderCircle className="size-10 animate-spin text-rs-700" aria-hidden="true" />
           </div>
         ) : materials.length === 0 ? (
-          <div className="text-center py-10 text-gray-400">
-            <FaFileAudio className="text-6xl mx-auto mb-4 opacity-50" />
-            <p>No hay materiales generados para este curso.</p>
-          </div>
+          <EmptyState icon={LuFileAudio}>No hay materiales generados para este curso.</EmptyState>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
             {materials.map((material) => (
-              <div key={material._id} className="bg-[#101434] rounded-xl p-6 shadow-lg border border-gray-800 hover:border-[#6356E5] transition">
-                <div className="flex justify-between items-start mb-4">
-                  <span className={`px-2 py-1 rounded text-xs font-bold ${material.estado === 'PUBLICADO' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                    {material.estado}
-                  </span>
-                  <span className="text-xs text-gray-500">
+              <article
+                key={material._id}
+                className="rs-card flex flex-col p-5 transition-colors hover:border-rs-400"
+              >
+                <div className="mb-4 flex items-start justify-between gap-2">
+                  <StatusChip estado={material.estado} />
+                  <span className="text-xs text-rs-muted">
                     {new Date(material.createdAt).toLocaleDateString()}
                   </span>
                 </div>
-                
-                <h3 className="text-xl font-bold mb-2 line-clamp-1">Material de Clase</h3>
-                <p className="text-gray-400 text-sm mb-4 line-clamp-3">
+
+                <h3 className="rs-title mb-2 line-clamp-1 text-lg">Material de clase</h3>
+                <p className="mb-5 line-clamp-3 text-sm text-rs-muted">
                   {material.resumen || "Sin resumen disponible..."}
                 </p>
 
-                <div className="flex gap-2 mt-auto">
-                  <button 
+                <div className="mt-auto flex gap-2">
+                  <button
+                    type="button"
                     onClick={() => openEditModal(material)}
-                    className="flex-1 bg-[#1a1a2e] hover:bg-[#252540] py-2 rounded flex items-center justify-center gap-2 transition"
+                    className="rs-btn-secondary flex-1"
                   >
-                    {(user.role === 'docente' || user.role === 'administrador') ? <AiOutlineEdit /> : <AiOutlineEye />}
-                    <span>{(user.role === 'docente' || user.role === 'administrador') ? 'Editar/Ver' : 'Ver'}</span>
+                    {canEdit ? (
+                      <LuPencil className="size-4" aria-hidden="true" />
+                    ) : (
+                      <LuEye className="size-4" aria-hidden="true" />
+                    )}
+                    <span>{canEdit ? 'Editar / Ver' : 'Ver'}</span>
                   </button>
-                  
-                  {(user.role === 'docente' || user.role === 'administrador') && material.estado !== 'PUBLICADO' && (
-                    <button 
+
+                  {canEdit && material.estado !== 'PUBLICADO' && (
+                    <button
+                      type="button"
                       onClick={() => handlePublish(material._id)}
-                      className="bg-green-600 hover:bg-green-700 px-3 rounded flex items-center justify-center transition"
+                      className="rs-btn-accent"
                       title="Publicar"
                     >
-                      <AiOutlineCheck />
+                      <LuCheck className="size-4" aria-hidden="true" /> Publicar
                     </button>
                   )}
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         )}
 
-        {/* Edit Modal */}
+        {/* Modal de edición */}
         {isEditModalOpen && currentMaterial && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="bg-[#101434] w-full max-w-5xl max-h-[90vh] rounded-xl shadow-2xl flex flex-col">
-              <div className="p-6 border-b border-[#2a2a4a] flex justify-between items-center">
-                <h2 className="text-2xl font-bold">
-                  {(user.role === 'docente' || user.role === 'administrador') ? 'Editar Material' : 'Ver Material'}
-                </h2>
-                <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-white text-2xl">✕</button>
-              </div>
-              
-              {/* Tabs */}
-              <div className="border-b border-[#2a2a4a] px-6 flex gap-2 overflow-x-auto">
-                <button
-                  onClick={() => setSelectedTab('resumen')}
-                  className={`px-4 py-3 font-medium transition border-b-2 whitespace-nowrap ${
-                    selectedTab === 'resumen'
-                      ? 'border-[#6356E5] text-[#6356E5]'
-                      : 'border-transparent text-white/60 hover:text-white'
-                  }`}
-                >
-                  Resumen
-                </button>
-                <button
-                  onClick={() => setSelectedTab('glosario')}
-                  className={`px-4 py-3 font-medium transition border-b-2 whitespace-nowrap ${
-                    selectedTab === 'glosario'
-                      ? 'border-[#6356E5] text-[#6356E5]'
-                      : 'border-transparent text-white/60 hover:text-white'
-                  }`}
-                >
-                  Glosario ({editFormData.glosario.length})
-                </button>
-                <button
-                  onClick={() => setSelectedTab('quiz')}
-                  className={`px-4 py-3 font-medium transition border-b-2 whitespace-nowrap ${
-                    selectedTab === 'quiz'
-                      ? 'border-[#6356E5] text-[#6356E5]'
-                      : 'border-transparent text-white/60 hover:text-white'
-                  }`}
-                >
-                  Quiz ({editFormData.quiz.length})
-                </button>
-                <button
-                  onClick={() => setSelectedTab('checklist')}
-                  className={`px-4 py-3 font-medium transition border-b-2 whitespace-nowrap ${
-                    selectedTab === 'checklist'
-                      ? 'border-[#6356E5] text-[#6356E5]'
-                      : 'border-transparent text-white/60 hover:text-white'
-                  }`}
-                >
-                  Checklist ({editFormData.checklist.length})
-                </button>
-              </div>
-
-              <div className="p-6 overflow-y-auto flex-1">
-                {/* Resumen Tab */}
-                {selectedTab === 'resumen' && (
-                  <div>
-                    <label className="block text-sm font-bold text-[#6356E5] mb-2">Resumen Generado</label>
-                    {(user.role === 'docente' || user.role === 'administrador') ? (
-                      <textarea
-                        value={editFormData.resumen}
-                        onChange={(e) => setEditFormData({ ...editFormData, resumen: e.target.value })}
-                        className="w-full h-96 bg-[#0a0a12] border border-gray-700 rounded p-4 text-white focus:outline-none focus:border-[#6356E5] resize-none"
-                        placeholder="Escribe el resumen aquí..."
-                      />
-                    ) : (
-                      <div className="bg-[#0a0a12] p-4 rounded text-gray-300 whitespace-pre-wrap">
-                        {currentMaterial.resumen}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Glosario Tab */}
-                {selectedTab === 'glosario' && (
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <label className="text-sm font-bold text-[#6356E5]">Glosario</label>
-                      {(user.role === 'docente' || user.role === 'administrador') && (
-                        <button
-                          onClick={() => setEditFormData({
-                            ...editFormData,
-                            glosario: [...editFormData.glosario, { term: '', definition: '' }]
-                          })}
-                          className="bg-[#6356E5] hover:bg-[#4f48c7] text-white px-3 py-1 rounded text-sm"
-                        >
-                          + Agregar Término
-                        </button>
-                      )}
-                    </div>
-                    <div className="space-y-3">
-                      {editFormData.glosario.map((item, idx) => (
-                        <div key={idx} className="bg-[#1a1a2e] p-4 rounded border border-[#2a2a4a]">
-                          {(user.role === 'docente' || user.role === 'administrador') ? (
-                            <>
-                              <div className="flex justify-between items-start mb-2">
-                                <input
-                                  type="text"
-                                  value={item.term}
-                                  onChange={(e) => {
-                                    const newGlosario = [...editFormData.glosario];
-                                    newGlosario[idx].term = e.target.value;
-                                    setEditFormData({ ...editFormData, glosario: newGlosario });
-                                  }}
-                                  className="flex-1 bg-[#0a0a12] border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-[#6356E5]"
-                                  placeholder="Término"
-                                />
-                                <button
-                                  onClick={() => {
-                                    const newGlosario = editFormData.glosario.filter((_, i) => i !== idx);
-                                    setEditFormData({ ...editFormData, glosario: newGlosario });
-                                  }}
-                                  className="ml-2 text-red-500 hover:text-red-400"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                              <textarea
-                                value={item.definition}
-                                onChange={(e) => {
-                                  const newGlosario = [...editFormData.glosario];
-                                  newGlosario[idx].definition = e.target.value;
-                                  setEditFormData({ ...editFormData, glosario: newGlosario });
-                                }}
-                                className="w-full bg-[#0a0a12] border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-[#6356E5] resize-none"
-                                rows={2}
-                                placeholder="Definición"
-                              />
-                            </>
-                          ) : (
-                            <>
-                              <p className="font-semibold text-white mb-1">{item.term}</p>
-                              <p className="text-gray-400 text-sm">{item.definition}</p>
-                            </>
-                          )}
-                        </div>
-                      ))}
-                      {editFormData.glosario.length === 0 && (
-                        <p className="text-gray-500 text-center py-8">No hay términos en el glosario</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Quiz Tab */}
-                {selectedTab === 'quiz' && (
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <label className="text-sm font-bold text-[#6356E5]">Quiz</label>
-                      {(user.role === 'docente' || user.role === 'administrador') && (
-                        <button
-                          onClick={() => setEditFormData({
-                            ...editFormData,
-                            quiz: [...editFormData.quiz, { pregunta: '', opciones: ['', '', '', ''], respuestaCorrecta: '', justificacion: '' }]
-                          })}
-                          className="bg-[#6356E5] hover:bg-[#4f48c7] text-white px-3 py-1 rounded text-sm"
-                        >
-                          + Agregar Pregunta
-                        </button>
-                      )}
-                    </div>
-                    <div className="space-y-4">
-                      {editFormData.quiz.map((q, idx) => (
-                        <div key={idx} className="bg-[#1a1a2e] p-4 rounded border border-[#2a2a4a]">
-                          {(user.role === 'docente' || user.role === 'administrador') ? (
-                            <>
-                              <div className="flex justify-between items-start mb-3">
-                                <span className="text-[#6356E5] font-bold">#{idx + 1}</span>
-                                <button
-                                  onClick={() => {
-                                    const newQuiz = editFormData.quiz.filter((_, i) => i !== idx);
-                                    setEditFormData({ ...editFormData, quiz: newQuiz });
-                                  }}
-                                  className="text-red-500 hover:text-red-400"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                              <textarea
-                                value={q.pregunta}
-                                onChange={(e) => {
-                                  const newQuiz = [...editFormData.quiz];
-                                  newQuiz[idx].pregunta = e.target.value;
-                                  setEditFormData({ ...editFormData, quiz: newQuiz });
-                                }}
-                                className="w-full bg-[#0a0a12] border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-[#6356E5] resize-none mb-3"
-                                rows={2}
-                                placeholder="Pregunta"
-                              />
-                              <div className="space-y-2 mb-3">
-                                {q.opciones.map((opt, optIdx) => (
-                                  <input
-                                    key={optIdx}
-                                    type="text"
-                                    value={opt}
-                                    onChange={(e) => {
-                                      const newQuiz = [...editFormData.quiz];
-                                      newQuiz[idx].opciones[optIdx] = e.target.value;
-                                      setEditFormData({ ...editFormData, quiz: newQuiz });
-                                    }}
-                                    className="w-full bg-[#0a0a12] border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-[#6356E5]"
-                                    placeholder={`Opción ${String.fromCharCode(65 + optIdx)}`}
-                                  />
-                                ))}
-                              </div>
-                              <input
-                                type="text"
-                                value={q.respuestaCorrecta}
-                                onChange={(e) => {
-                                  const newQuiz = [...editFormData.quiz];
-                                  newQuiz[idx].respuestaCorrecta = e.target.value;
-                                  setEditFormData({ ...editFormData, quiz: newQuiz });
-                                }}
-                                className="w-full bg-[#0a0a12] border border-green-700 rounded px-3 py-2 text-white focus:outline-none focus:border-green-500 mb-2"
-                                placeholder="Respuesta correcta (debe coincidir con una opción)"
-                              />
-                              <textarea
-                                value={q.justificacion}
-                                onChange={(e) => {
-                                  const newQuiz = [...editFormData.quiz];
-                                  newQuiz[idx].justificacion = e.target.value;
-                                  setEditFormData({ ...editFormData, quiz: newQuiz });
-                                }}
-                                className="w-full bg-[#0a0a12] border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-[#6356E5] resize-none"
-                                rows={2}
-                                placeholder="Justificación de la respuesta"
-                              />
-                            </>
-                          ) : (
-                            <>
-                              <p className="font-bold mb-2">{idx + 1}. {q.pregunta}</p>
-                              <ul className="list-disc list-inside text-sm text-gray-400 pl-4 mb-2">
-                                {q.opciones.map((opt, i) => (
-                                  <li key={i} className={opt === q.respuestaCorrecta ? 'text-green-400 font-semibold' : ''}>
-                                    {opt}
-                                  </li>
-                                ))}
-                              </ul>
-                              {q.justificacion && (
-                                <p className="text-sm text-gray-500 italic">Justificación: {q.justificacion}</p>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      ))}
-                      {editFormData.quiz.length === 0 && (
-                        <p className="text-gray-500 text-center py-8">No hay preguntas en el quiz</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Checklist Tab */}
-                {selectedTab === 'checklist' && (
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <label className="text-sm font-bold text-[#6356E5]">Checklist</label>
-                      {(user.role === 'docente' || user.role === 'administrador') && (
-                        <button
-                          onClick={() => setEditFormData({
-                            ...editFormData,
-                            checklist: [...editFormData.checklist, '']
-                          })}
-                          className="bg-[#6356E5] hover:bg-[#4f48c7] text-white px-3 py-1 rounded text-sm"
-                        >
-                          + Agregar Item
-                        </button>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      {editFormData.checklist.map((item, idx) => (
-                        <div key={idx} className="bg-[#1a1a2e] p-3 rounded border border-[#2a2a4a] flex items-center gap-3">
-                          <span className="text-[#6356E5]">☐</span>
-                          {(user.role === 'docente' || user.role === 'administrador') ? (
-                            <>
-                              <input
-                                type="text"
-                                value={item}
-                                onChange={(e) => {
-                                  const newChecklist = [...editFormData.checklist];
-                                  newChecklist[idx] = e.target.value;
-                                  setEditFormData({ ...editFormData, checklist: newChecklist });
-                                }}
-                                className="flex-1 bg-[#0a0a12] border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-[#6356E5]"
-                                placeholder="Item del checklist"
-                              />
-                              <button
-                                onClick={() => {
-                                  const newChecklist = editFormData.checklist.filter((_, i) => i !== idx);
-                                  setEditFormData({ ...editFormData, checklist: newChecklist });
-                                }}
-                                className="text-red-500 hover:text-red-400"
-                              >
-                                ✕
-                              </button>
-                            </>
-                          ) : (
-                            <span className="text-white">{item}</span>
-                          )}
-                        </div>
-                      ))}
-                      {editFormData.checklist.length === 0 && (
-                        <p className="text-gray-500 text-center py-8">No hay items en el checklist</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-6 border-t border-[#2a2a4a] flex justify-end gap-3">
-                <button 
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition cursor-pointer"
-                >
+          <Modal
+            size="xl"
+            title={
+              <span className="flex items-center gap-3">
+                {canEdit ? 'Editar material' : 'Ver material'}
+                <StatusChip estado={editFormData.estado} />
+              </span>
+            }
+            onClose={() => setIsEditModalOpen(false)}
+            toolbar={
+              <Tabs<'resumen' | 'glosario' | 'quiz' | 'checklist'>
+                className="border-b border-rs-line bg-rs-50 px-4 py-2 sm:px-6"
+                value={selectedTab}
+                onChange={setSelectedTab}
+                tabs={[
+                  { id: 'resumen', label: 'Resumen' },
+                  { id: 'glosario', label: `Glosario (${editFormData.glosario.length})` },
+                  { id: 'quiz', label: `Quiz (${editFormData.quiz.length})` },
+                  { id: 'checklist', label: `Checklist (${editFormData.checklist.length})` },
+                ]}
+              />
+            }
+            footer={
+              <>
+                <button type="button" onClick={() => setIsEditModalOpen(false)} className="rs-btn-ghost">
                   Cerrar
                 </button>
-                {(user.role === 'docente' || user.role === 'administrador') && (
-                  <button 
-                    onClick={handleSaveEdit}
-                    className="px-4 py-2 rounded bg-[#6356E5] hover:bg-[#4f48c7] transition cursor-pointer"
-                  >
-                    Guardar Cambios
+                {canEdit && (
+                  <button type="button" onClick={handleSaveEdit} className="rs-btn-primary">
+                    <LuSave className="size-4" aria-hidden="true" /> Guardar cambios
                   </button>
                 )}
+              </>
+            }
+          >
+            {/* Resumen */}
+            {selectedTab === 'resumen' && (
+              <div>
+                <label htmlFor="resumen" className="rs-label text-rs-700">Resumen generado</label>
+                {canEdit ? (
+                  <textarea
+                    id="resumen"
+                    value={editFormData.resumen}
+                    onChange={(e) => setEditFormData({ ...editFormData, resumen: e.target.value })}
+                    className={`${fieldClass} h-96 resize-y p-4`}
+                    placeholder="Escribe el resumen aquí..."
+                  />
+                ) : (
+                  <div className="whitespace-pre-wrap rounded-xl border border-rs-line bg-white p-4 leading-relaxed text-rs-ink">
+                    {currentMaterial.resumen}
+                  </div>
+                )}
               </div>
-            </div>
-          </div>
+            )}
+
+            {/* Glosario */}
+            {selectedTab === 'glosario' && (
+              <div>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="rs-title text-base">Glosario</h3>
+                  {canEdit && (
+                    <button
+                      type="button"
+                      onClick={() => setEditFormData({
+                        ...editFormData,
+                        glosario: [...editFormData.glosario, { term: '', definition: '' }]
+                      })}
+                      className="rs-btn-secondary"
+                    >
+                      <LuPlus className="size-4" aria-hidden="true" /> Agregar término
+                    </button>
+                  )}
+                </div>
+                <div className={canEdit ? 'space-y-3' : 'grid grid-cols-1 gap-3 sm:grid-cols-2'}>
+                  {editFormData.glosario.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className={canEdit ? 'rounded-xl border border-rs-line bg-white p-4' : 'rounded-xl bg-rs-100 p-4'}
+                    >
+                      {canEdit ? (
+                        <>
+                          <div className="mb-2 flex items-start gap-2">
+                            <input
+                              type="text"
+                              aria-label={`Término ${idx + 1}`}
+                              value={item.term}
+                              onChange={(e) => {
+                                const newGlosario = [...editFormData.glosario];
+                                newGlosario[idx].term = e.target.value;
+                                setEditFormData({ ...editFormData, glosario: newGlosario });
+                              }}
+                              className={`${fieldClass} font-semibold`}
+                              placeholder="Término"
+                            />
+                            {removeButton(() => {
+                              const newGlosario = editFormData.glosario.filter((_, i) => i !== idx);
+                              setEditFormData({ ...editFormData, glosario: newGlosario });
+                            }, 'Eliminar término')}
+                          </div>
+                          <textarea
+                            aria-label={`Definición ${idx + 1}`}
+                            value={item.definition}
+                            onChange={(e) => {
+                              const newGlosario = [...editFormData.glosario];
+                              newGlosario[idx].definition = e.target.value;
+                              setEditFormData({ ...editFormData, glosario: newGlosario });
+                            }}
+                            className={`${fieldClass} resize-y`}
+                            rows={2}
+                            placeholder="Definición"
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <p className="mb-1 font-semibold text-rs-900">{item.term}</p>
+                          <p className="text-sm text-[#2f4a3e]">{item.definition}</p>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  {editFormData.glosario.length === 0 && (
+                    <p className="py-8 text-center text-rs-muted">No hay términos en el glosario</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Quiz */}
+            {selectedTab === 'quiz' && (
+              <div>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="rs-title text-base">Quiz</h3>
+                  {canEdit && (
+                    <button
+                      type="button"
+                      onClick={() => setEditFormData({
+                        ...editFormData,
+                        quiz: [...editFormData.quiz, { pregunta: '', opciones: ['', '', '', ''], respuestaCorrecta: '', justificacion: '' }]
+                      })}
+                      className="rs-btn-secondary"
+                    >
+                      <LuPlus className="size-4" aria-hidden="true" /> Agregar pregunta
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-4">
+                  {editFormData.quiz.map((q, idx) => (
+                    <div key={idx} className="rounded-xl border border-rs-line bg-white p-4">
+                      {canEdit ? (
+                        <>
+                          <div className="mb-3 flex items-center justify-between">
+                            <span className="rounded-full bg-rs-900 px-2.5 py-1 text-xs font-bold text-rs-lime">#{idx + 1}</span>
+                            {removeButton(() => {
+                              const newQuiz = editFormData.quiz.filter((_, i) => i !== idx);
+                              setEditFormData({ ...editFormData, quiz: newQuiz });
+                            }, 'Eliminar pregunta')}
+                          </div>
+                          <textarea
+                            aria-label={`Pregunta ${idx + 1}`}
+                            value={q.pregunta}
+                            onChange={(e) => {
+                              const newQuiz = [...editFormData.quiz];
+                              newQuiz[idx].pregunta = e.target.value;
+                              setEditFormData({ ...editFormData, quiz: newQuiz });
+                            }}
+                            className={`${fieldClass} mb-3 resize-y`}
+                            rows={2}
+                            placeholder="Pregunta"
+                          />
+                          <div className="mb-3 space-y-2">
+                            {q.opciones.map((opt, optIdx) => (
+                              <input
+                                key={optIdx}
+                                type="text"
+                                aria-label={`Opción ${String.fromCharCode(65 + optIdx)}`}
+                                value={opt}
+                                onChange={(e) => {
+                                  const newQuiz = [...editFormData.quiz];
+                                  newQuiz[idx].opciones[optIdx] = e.target.value;
+                                  setEditFormData({ ...editFormData, quiz: newQuiz });
+                                }}
+                                className={fieldClass}
+                                placeholder={`Opción ${String.fromCharCode(65 + optIdx)}`}
+                              />
+                            ))}
+                          </div>
+                          <input
+                            type="text"
+                            aria-label="Respuesta correcta"
+                            value={q.respuestaCorrecta}
+                            onChange={(e) => {
+                              const newQuiz = [...editFormData.quiz];
+                              newQuiz[idx].respuestaCorrecta = e.target.value;
+                              setEditFormData({ ...editFormData, quiz: newQuiz });
+                            }}
+                            className={`${fieldClass} mb-2 border-rs-600 bg-rs-100`}
+                            placeholder="Respuesta correcta (debe coincidir con una opción)"
+                          />
+                          <textarea
+                            aria-label="Justificación"
+                            value={q.justificacion}
+                            onChange={(e) => {
+                              const newQuiz = [...editFormData.quiz];
+                              newQuiz[idx].justificacion = e.target.value;
+                              setEditFormData({ ...editFormData, quiz: newQuiz });
+                            }}
+                            className={`${fieldClass} resize-y`}
+                            rows={2}
+                            placeholder="Justificación de la respuesta"
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <p className="mb-3 font-semibold text-rs-ink">{idx + 1}. {q.pregunta}</p>
+                          <ul className="mb-2 space-y-2">
+                            {q.opciones.map((opt, i) => {
+                              const correct = opt === q.respuestaCorrecta;
+                              return (
+                                <li
+                                  key={i}
+                                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${
+                                    correct
+                                      ? 'border-[1.5px] border-rs-700 bg-rs-100 font-semibold text-rs-900'
+                                      : 'border border-rs-line-soft text-rs-ink'
+                                  }`}
+                                >
+                                  {correct && <LuCheck className="size-4" aria-hidden="true" />}
+                                  {opt}
+                                  {correct && <span className="ml-auto text-xs">Respuesta correcta</span>}
+                                </li>
+                              );
+                            })}
+                          </ul>
+                          {q.justificacion && (
+                            <p className="text-sm text-rs-muted">
+                              <strong className="text-rs-900">Justificación:</strong> {q.justificacion}
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  {editFormData.quiz.length === 0 && (
+                    <p className="py-8 text-center text-rs-muted">No hay preguntas en el quiz</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Checklist */}
+            {selectedTab === 'checklist' && (
+              <div>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="rs-title text-base">Checklist</h3>
+                  {canEdit && (
+                    <button
+                      type="button"
+                      onClick={() => setEditFormData({
+                        ...editFormData,
+                        checklist: [...editFormData.checklist, '']
+                      })}
+                      className="rs-btn-secondary"
+                    >
+                      <LuPlus className="size-4" aria-hidden="true" /> Agregar ítem
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {editFormData.checklist.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3 rounded-xl border border-rs-line bg-white p-3">
+                      <LuSquare className="size-5 shrink-0 text-rs-600" aria-hidden="true" />
+                      {canEdit ? (
+                        <>
+                          <input
+                            type="text"
+                            aria-label={`Ítem ${idx + 1}`}
+                            value={item}
+                            onChange={(e) => {
+                              const newChecklist = [...editFormData.checklist];
+                              newChecklist[idx] = e.target.value;
+                              setEditFormData({ ...editFormData, checklist: newChecklist });
+                            }}
+                            className={fieldClass}
+                            placeholder="Ítem del checklist"
+                          />
+                          {removeButton(() => {
+                            const newChecklist = editFormData.checklist.filter((_, i) => i !== idx);
+                            setEditFormData({ ...editFormData, checklist: newChecklist });
+                          }, 'Eliminar ítem')}
+                        </>
+                      ) : (
+                        <span className="text-rs-ink">{item}</span>
+                      )}
+                    </div>
+                  ))}
+                  {editFormData.checklist.length === 0 && (
+                    <p className="py-8 text-center text-rs-muted">No hay items en el checklist</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </Modal>
         )}
 
         {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}

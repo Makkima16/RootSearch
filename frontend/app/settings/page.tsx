@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { getUserProfile } from '@/services/users';
 import { updateUserProfile } from '@/services/users';
 import SideBar from '@/components/SideBar';
-import { FaUser, FaEnvelope, FaSave } from 'react-icons/fa';
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { LuLoaderCircle, LuMail, LuSave, LuUser } from 'react-icons/lu';
 
 type UserData = {
   _id: string;
@@ -96,9 +95,9 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
+      <div className="flex items-center justify-center min-h-screen bg-rs-50 text-rs-ink">
         <div className="text-center">
-          <AiOutlineLoading3Quarters className="animate-spin text-4xl text-[#6356E5] mx-auto mb-4" />
+          <LuLoaderCircle className="animate-spin text-4xl text-rs-700 mx-auto mb-4" />
           <span className="text-lg">Cargando...</span>
         </div>
       </div>
@@ -106,35 +105,35 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#040418] text-white font-sans">
+    <div className="flex min-h-screen flex-col lg:flex-row bg-rs-50 text-rs-ink font-sans">
       <SideBar user={user!} />
       
-      <main className="flex-1 flex items-center justify-center p-8">
+      <main className="min-w-0 flex-1 flex items-start justify-center px-4 py-8 sm:px-6 lg:px-10">
         <div className="w-full max-w-2xl">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Configuración de Perfil</h1>
-            <p className="text-gray-400">Actualiza tu información personal</p>
+            <h1 className="rs-title text-3xl mb-2">Configuración de Perfil</h1>
+            <p className="text-rs-muted">Actualiza tu información personal</p>
           </div>
 
           {/* Card */}
-          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl shadow-2xl p-8">
+          <div className="bg-rs-surface border border-rs-line rounded-2xl shadow-2xl p-8">
             {/* Avatar Section */}
             <div className="flex flex-col items-center mb-8">
-              <div className="w-24 h-24 bg-gradient-to-br from-[#6356E5] to-[#4f48c7] rounded-full flex items-center justify-center text-4xl font-bold mb-4">
+              <div className="w-24 h-24 bg-rs-700 text-rs-lime rounded-full flex items-center justify-center text-4xl font-bold mb-4">
                 {formData.name.charAt(0).toUpperCase()}
               </div>
-              <p className="text-sm text-gray-400">ID: {user?.id}</p>
+              <p className="text-sm text-rs-muted">ID: {user?.id}</p>
             </div>
 
             {/* Messages */}
             {error && (
-              <div className="mb-6 p-4 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400 text-sm">
+              <div className="mb-6 p-4 bg-rs-error-bg border border-rs-error/30 rounded-lg text-rs-error text-sm">
                 {error}
               </div>
             )}
             {successMessage && (
-              <div className="mb-6 p-4 bg-green-500 bg-opacity-20 border border-green-500 rounded-lg text-white text-md text-center">
+              <div className="mb-6 p-4 bg-rs-100 border border-rs-400 rounded-lg text-rs-ink text-md text-center">
                 {successMessage}
               </div>
             )}
@@ -145,12 +144,12 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Name Field */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
-                    Nombre <span className="text-red-400">*</span>
+                  <label htmlFor="name" className="block text-sm font-medium text-rs-ink mb-2">
+                    Nombre <span className="text-rs-error">*</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <FaUser className="text-gray-500" />
+                      <LuUser className="text-rs-muted" />
                     </div>
                     <input
                       type="text"
@@ -160,7 +159,7 @@ export default function SettingsPage() {
                       onChange={handleChange}
                       required
                       disabled={saving}
-                      className="w-full pl-12 pr-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full pl-12 pr-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="Tu nombre completo"
                     />
                   </div>
@@ -168,12 +167,12 @@ export default function SettingsPage() {
 
                 {/* Email Field */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                    Correo Electrónico <span className="text-red-400">*</span>
+                  <label htmlFor="email" className="block text-sm font-medium text-rs-ink mb-2">
+                    Correo Electrónico <span className="text-rs-error">*</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <FaEnvelope className="text-gray-500" />
+                      <LuMail className="text-rs-muted" />
                     </div>
                     <input
                       type="email"
@@ -183,7 +182,7 @@ export default function SettingsPage() {
                       onChange={handleChange}
                       required
                       disabled={saving}
-                      className="w-full pl-12 pr-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full pl-12 pr-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="tu@email.com"
                     />
                   </div>
@@ -194,7 +193,7 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Phone Field */}
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
+                  <label htmlFor="phone" className="block text-sm font-medium text-rs-ink mb-2">
                     Teléfono
                   </label>
                   <input
@@ -204,14 +203,14 @@ export default function SettingsPage() {
                     value={formData.phone}
                     onChange={handleChange}
                     disabled={saving}
-                    className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="+57 300 123 4567"
                   />
                 </div>
 
                 {/* Birth Date Field */}
                 <div>
-                  <label htmlFor="birthDate" className="block text-sm font-medium text-gray-300 mb-2">
+                  <label htmlFor="birthDate" className="block text-sm font-medium text-rs-ink mb-2">
                     Fecha de Nacimiento
                   </label>
                   <input
@@ -221,7 +220,7 @@ export default function SettingsPage() {
                     value={formData.birthDate}
                     onChange={handleChange}
                     disabled={saving}
-                    className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="DD/MM/YYYY"
                   />
                 </div>
@@ -229,7 +228,7 @@ export default function SettingsPage() {
 
               {/* Row 3: Address (full width) */}
               <div>
-                <label htmlFor="address" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="address" className="block text-sm font-medium text-rs-ink mb-2">
                   Dirección
                 </label>
                 <input
@@ -239,15 +238,15 @@ export default function SettingsPage() {
                   value={formData.address}
                   onChange={handleChange}
                   disabled={saving}
-                  className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="Calle 123 # 45-67"
                 />
               </div>
 
               {/* Role Field */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Rol {user?.role.toLowerCase() !== 'administrador' && <span className="text-xs text-gray-500">(Solo lectura)</span>}
+                <label className="block text-sm font-medium text-rs-ink mb-2">
+                  Rol {user?.role.toLowerCase() !== 'administrador' && <span className="text-xs text-rs-muted">(Solo lectura)</span>}
                 </label>
                 {user?.role.toLowerCase() === 'administrador' ? (
                   <input
@@ -257,16 +256,16 @@ export default function SettingsPage() {
                     value={formData.roleId}
                     onChange={handleChange}
                     disabled={saving}
-                    className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="ID del rol"
                   />
                 ) : (
-                  <div className="px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-gray-400">
+                  <div className="px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-muted">
                     {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase() : 'N/A'}
                   </div>
                 )}
                 {user?.role.toLowerCase() !== 'administrador' && (
-                  <p className="mt-1 text-xs text-gray-500">Solo los administradores pueden modificar roles</p>
+                  <p className="mt-1 text-xs text-rs-muted">Solo los administradores pueden modificar roles</p>
                 )}
               </div>
 
@@ -275,16 +274,16 @@ export default function SettingsPage() {
                 <button
                   type="submit"
                   disabled={saving || !formData.name.trim() || !formData.email.trim()}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-[#6356E5] to-[#4f48c7] hover:from-[#4f48c7] hover:to-[#6356E5] text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full px-6 py-3 bg-rs-700 hover:bg-rs-800 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
                 >
                   {saving ? (
                     <>
-                      <AiOutlineLoading3Quarters className="animate-spin text-lg" />
+                      <LuLoaderCircle className="animate-spin text-lg" />
                       Guardando...
                     </>
                   ) : (
                     <>
-                      <FaSave />
+                      <LuSave />
                       Guardar Cambios
                     </>
                   )}

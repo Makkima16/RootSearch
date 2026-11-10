@@ -4,8 +4,7 @@ import { getUserById, getUserProfile, updateUserProfile, getAvailableRoles } fro
 import SideBar from '@/components/SideBar';
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from 'next/navigation';
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
-import { FaEdit, FaSave, FaTimes } from 'react-icons/fa';
+import { LuLoaderCircle, LuPencil, LuSave, LuX } from 'react-icons/lu';
 import Toast from '@/components/Toast';
 
 type Role = {
@@ -184,9 +183,9 @@ function UserProfileContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
+      <div className="flex items-center justify-center min-h-screen bg-rs-50 text-rs-ink">
         <div className="text-center">
-          <AiOutlineLoading3Quarters className="animate-spin text-4xl text-[#6356E5] mx-auto mb-4" />
+          <LuLoaderCircle className="animate-spin text-4xl text-rs-700 mx-auto mb-4" />
           <span className="text-lg">Cargando...</span>
         </div>
       </div>
@@ -195,13 +194,13 @@ function UserProfileContent() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
+      <div className="flex items-center justify-center min-h-screen bg-rs-50 text-rs-ink">
         <div className="text-center">
-          <h1 className="text-2xl font-semibold mb-2">⚠️ Acceso Denegado</h1>
-          <p className="text-zinc-300">{error}</p>
+          <h1 className="rs-title text-2xl mb-2">Acceso Denegado</h1>
+          <p className="text-rs-ink">{error}</p>
           <a
             href="/dashboard"
-            className="mt-4 inline-block bg-[#6356E5] hover:bg-[#4f48c7] text-white px-4 py-2 rounded-lg transition"
+            className="mt-4 inline-block bg-rs-700 hover:bg-rs-800 text-white px-4 py-2 rounded-lg transition"
           >
             Volver al inicio
           </a>
@@ -211,7 +210,7 @@ function UserProfileContent() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#040418] text-white">
+    <div className="flex min-h-screen flex-col lg:flex-row bg-rs-50 text-rs-ink">
       {toast && (
         <Toast
           message={toast.message}
@@ -224,25 +223,25 @@ function UserProfileContent() {
       <SideBar user={currentUser!} />
 
       {/* Contenido principal */}
-      <main className="flex-1 flex justify-center items-center p-10">
-        <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl p-8 w-full max-w-3xl shadow-2xl">
-          <div className="bg-[#0f0f1e] bg-opacity-50 rounded-xl p-6">
+      <main className="min-w-0 flex-1 flex justify-center items-start px-4 py-8 sm:px-6 lg:px-10">
+        <div className="bg-rs-surface border border-rs-line rounded-2xl p-8 w-full max-w-3xl shadow-2xl">
+          <div className="bg-rs-50 rounded-xl p-6">
 
             {/* Avatar y nombre */}
             <div className="flex flex-col items-center mb-8">
-              <div className={`w-24 h-24 rounded-full bg-gradient-to-br ${
+              <div className={`w-24 h-24 rounded-full ${
                 userInfo?.role.toLowerCase() === 'docente' 
-                  ? 'from-[#28a745] to-[#1e7e34]' 
-                  : 'from-[#6356E5] to-[#4f48c7]'
+                  ? 'bg-rs-900 text-rs-lime'
+                  : 'bg-rs-700 text-white'
               } flex items-center justify-center text-4xl font-bold`}>
                 {userInfo?.name.charAt(0).toUpperCase()}
               </div>
               <p className="mt-4 text-2xl font-bold">{isEditing ? editForm.name : userInfo?.name}</p>
               <span className={`mt-1 px-3 py-1 ${
                 userInfo?.role.toLowerCase() === 'docente'
-                  ? 'bg-[#28a745]'
-                  : 'bg-[#6356E5]'
-              } bg-opacity-20 text-white rounded-full text-sm`}>
+                  ? 'bg-rs-lime text-rs-950'
+                  : 'bg-rs-100 text-rs-800'
+              } font-semibold capitalize rounded-full text-sm`}>
                 {userInfo?.role}
               </span>
             </div>
@@ -252,28 +251,28 @@ function UserProfileContent() {
               {!isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#6356E5] hover:bg-[#4f48c7] rounded-lg transition cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2 bg-rs-700 hover:bg-rs-800 text-white font-semibold rounded-lg transition cursor-pointer"
                 >
-                  <FaEdit /> Editar
+                  <LuPencil /> Editar
                 </button>
               ) : (
                 <>
                   <button
                     onClick={handleCancel}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition cursor-pointer disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-4 py-2 bg-rs-100 hover:bg-rs-200 rounded-lg transition cursor-pointer disabled:cursor-not-allowed"
                     disabled={isSaving}
                   >
-                    <FaTimes /> Cancelar
+                    <LuX /> Cancelar
                   </button>
                   <button
                     onClick={handleSave}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#28a745] hover:bg-[#1e7e34] rounded-lg transition cursor-pointer disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-4 py-2 bg-rs-700 hover:bg-rs-800 text-white font-semibold rounded-lg transition cursor-pointer disabled:cursor-not-allowed"
                     disabled={isSaving}
                   >
                     {isSaving ? (
-                      <AiOutlineLoading3Quarters className="animate-spin" />
+                      <LuLoaderCircle className="animate-spin" />
                     ) : (
-                      <FaSave />
+                      <LuSave />
                     )}
                     {isSaving ? 'Guardando...' : 'Guardar'}
                   </button>
@@ -282,44 +281,44 @@ function UserProfileContent() {
             </div>
 
             {/* Tabla de información */}
-            <div className="grid grid-cols-1 md:grid-cols-2 border border-gray-700 rounded-lg overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 border border-rs-input rounded-lg overflow-hidden">
 
-              <div className="border-b border-gray-700 p-4 font-medium bg-[#1a1a2e]">Nombre</div>
-              <div className="border-b border-gray-700 p-4">
+              <div className="border-b border-rs-input p-4 font-medium bg-white">Nombre</div>
+              <div className="border-b border-rs-input p-4">
                 {isEditing ? (
                   <input
                     type="text"
                     value={editForm.name}
                     onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                    className="w-full bg-[#0f0f1e] border border-gray-600 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-[#6356E5]"
+                    className="w-full bg-white border border-rs-line rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-rs-700"
                   />
                 ) : (
                   userInfo?.name
                 )}
               </div>
 
-              <div className="border-b border-gray-700 p-4 font-medium bg-[#1a1a2e]">Correo</div>
-              <div className="border-b border-gray-700 p-4">
+              <div className="border-b border-rs-input p-4 font-medium bg-white">Correo</div>
+              <div className="border-b border-rs-input p-4">
                 {isEditing ? (
                   <input
                     type="email"
                     value={editForm.email}
                     onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                    className="w-full bg-[#0f0f1e] border border-gray-600 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-[#6356E5] text-blue-400"
+                    className="w-full bg-white border border-rs-line rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-rs-700 text-rs-info"
                   />
                 ) : (
-                  <span className="text-blue-400">{userInfo?.email}</span>
+                  <span className="text-rs-info">{userInfo?.email}</span>
                 )}
               </div>
 
-              <div className="border-b border-gray-700 p-4 font-medium bg-[#1a1a2e]">Rol</div>
-              <div className="border-b border-gray-700 p-4">
+              <div className="border-b border-rs-input p-4 font-medium bg-white">Rol</div>
+              <div className="border-b border-rs-input p-4">
                 {isEditing ? (
                   availableRoles.length > 0 ? (
                     <select
                       value={editForm.roleId}
                       onChange={(e) => setEditForm({ ...editForm, roleId: e.target.value })}
-                      className="w-full bg-[#0f0f1e] border border-gray-600 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-[#6356E5]"
+                      className="w-full bg-white border border-rs-line rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-rs-700"
                     >
                       {availableRoles.map((role) => (
                         <option key={role._id} value={role._id}>
@@ -328,62 +327,62 @@ function UserProfileContent() {
                       ))}
                     </select>
                   ) : (
-                    <span className="text-gray-400 text-sm">No se pudieron cargar los roles disponibles</span>
+                    <span className="text-rs-muted text-sm">No se pudieron cargar los roles disponibles</span>
                   )
                 ) : (
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                     userInfo?.role.toLowerCase() === 'docente' 
-                      ? 'bg-[#28a745]/20 text-[#28a745]' 
+                      ? 'bg-rs-100 text-rs-700' 
                       : userInfo?.role.toLowerCase() === 'administrador'
-                      ? 'bg-[#fd7e14]/20 text-[#fd7e14]'
-                      : 'bg-[#6356E5]/20 text-[#6356E5]'
+                      ? 'bg-rs-warn-bg text-rs-warn'
+                      : 'bg-rs-100 text-rs-700'
                   }`}>
                     {userInfo?.role}
                   </span>
                 )}
               </div>
               
-              <div className="border-b border-gray-700 p-4 font-medium bg-[#1a1a2e]">Fecha de registro</div>
-              <div className="border-b border-gray-700 p-4">{userInfo?.createdAt}</div>
+              <div className="border-b border-rs-input p-4 font-medium bg-white">Fecha de registro</div>
+              <div className="border-b border-rs-input p-4">{userInfo?.createdAt}</div>
 
-              <div className="border-b border-gray-700 p-4 font-medium bg-[#1a1a2e]">Teléfono</div>
-              <div className="border-b border-gray-700 p-4">
+              <div className="border-b border-rs-input p-4 font-medium bg-white">Teléfono</div>
+              <div className="border-b border-rs-input p-4">
                 {isEditing ? (
                   <input
                     type="text"
                     value={editForm.phone}
                     onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                     placeholder="No especificado"
-                    className="w-full bg-[#0f0f1e] border border-gray-600 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-[#6356E5]"
+                    className="w-full bg-white border border-rs-line rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-rs-700"
                   />
                 ) : (
                   userInfo?.phone
                 )}
               </div>
 
-              <div className="border-b border-gray-700 p-4 font-medium bg-[#1a1a2e]">Dirección</div>
-              <div className="border-b border-gray-700 p-4">
+              <div className="border-b border-rs-input p-4 font-medium bg-white">Dirección</div>
+              <div className="border-b border-rs-input p-4">
                 {isEditing ? (
                   <input
                     type="text"
                     value={editForm.address}
                     onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
                     placeholder="No especificado"
-                    className="w-full bg-[#0f0f1e] border border-gray-600 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-[#6356E5]"
+                    className="w-full bg-white border border-rs-line rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-rs-700"
                   />
                 ) : (
                   userInfo?.address
                 )}
               </div>
 
-              <div className="p-4 font-medium bg-[#1a1a2e]">Fecha de nacimiento</div>
+              <div className="p-4 font-medium bg-white">Fecha de nacimiento</div>
               <div className="p-4">
                 {isEditing ? (
                   <input
                     type="date"
                     value={editForm.birthDate}
                     onChange={(e) => setEditForm({ ...editForm, birthDate: e.target.value })}
-                    className="w-full bg-[#0f0f1e] border border-gray-600 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-[#6356E5]"
+                    className="w-full bg-white border border-rs-line rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-rs-700"
                   />
                 ) : (
                   userInfo?.birthDate
@@ -396,7 +395,7 @@ function UserProfileContent() {
             <div className="mt-6 flex justify-center">
               <a
                 href="/users/list"
-                className="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition"
+                className="px-6 py-2 bg-rs-100 hover:bg-rs-200 rounded-lg transition"
               >
                 Volver a la lista
               </a>
@@ -412,7 +411,7 @@ export default function UserProfile() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#050214] text-white">
+        <div className="min-h-screen flex items-center justify-center bg-rs-50 text-rs-ink">
           Cargando usuario...
         </div>
       }

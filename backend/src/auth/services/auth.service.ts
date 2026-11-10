@@ -6,6 +6,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
+import { randomInt } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
@@ -95,7 +96,9 @@ export class AuthService {
       roles: [estudianteRole._id],
     });
 
-    const verifyCode = await this.generateVerifyCode((newUser._id as any).toString());
+    const verifyCode = await this.generateVerifyCode(
+      (newUser._id as any).toString(),
+    );
 
     try {
       await this.emailService.sendWelcomeEmail(
@@ -108,7 +111,8 @@ export class AuthService {
     }
 
     return {
-      message: 'Usuario registrado exitosamente. Código de verificación enviado a tu correo electrónico.',
+      message:
+        'Usuario registrado exitosamente. Código de verificación enviado a tu correo electrónico.',
       email: newUser.email,
       name: newUser.name,
       requiresVerification: true,
@@ -151,7 +155,7 @@ export class AuthService {
   }
 
   async generateVerifyCode(userId: string): Promise<number> {
-    const verifyCode = Math.floor(100000 + Math.random() * 900000); 
+    const verifyCode = randomInt(100000, 1000000);
     const verifyCodeExpiration = new Date(Date.now() + 15 * 60 * 1000);
 
     await this.userModel.findByIdAndUpdate(userId, {
@@ -216,14 +220,6 @@ export class AuthService {
     };
   }
 
-  async sendVerificationCode(email: string, code: number) {
-    const user = await this.userModel.findOne({ email });
-
-    if (!user) {
-      throw new UnauthorizedException('Usuario no encontrado');
-    }
-  }
-
   async forgotPassword(email: string) {
     const user = await this.userModel.findOne({ email });
 
@@ -234,15 +230,15 @@ export class AuthService {
     }
 
     const resetToken = this.jwtService.sign(
-      { 
+      {
         sub: user._id,
         email: user.email,
-        type: 'password-reset'
+        type: 'password-reset',
       },
-      { expiresIn: '1h' } 
+      { expiresIn: '1h' },
     );
 
-    const resetPasswordExpiration = new Date(Date.now() + 60 * 60 * 1000); 
+    const resetPasswordExpiration = new Date(Date.now() + 60 * 60 * 1000);
     await this.userModel.findByIdAndUpdate(user._id, {
       resetPasswordToken: resetToken,
       resetPasswordExpiration: resetPasswordExpiration,
@@ -260,11 +256,16 @@ export class AuthService {
     }
 
     return {
-      message: 'Se ha enviado un enlace de recuperación a tu correo electrónico',
+      message:
+        'Se ha enviado un enlace de recuperación a tu correo electrónico',
     };
   }
 
-  async resetPassword(token: string, newPassword: string, confirmPassword: string) {
+  async resetPassword(
+    token: string,
+    newPassword: string,
+    confirmPassword: string,
+  ) {
     if (newPassword !== confirmPassword) {
       throw new UnauthorizedException('Las contraseñas no coinciden');
     }
@@ -281,7 +282,7 @@ export class AuthService {
     }
 
     const user = await this.userModel.findOne({
-      _id: decoded.userId,
+      _id: decoded.sub,
       resetPasswordToken: token,
     });
 
@@ -289,7 +290,10 @@ export class AuthService {
       throw new UnauthorizedException('Token inválido o ya utilizado');
     }
 
-    if (user.resetPasswordExpiration && user.resetPasswordExpiration < new Date()) {
+    if (
+      user.resetPasswordExpiration &&
+      user.resetPasswordExpiration < new Date()
+    ) {
       throw new UnauthorizedException('Token expirado');
     }
 

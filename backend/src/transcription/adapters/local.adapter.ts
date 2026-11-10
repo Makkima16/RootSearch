@@ -9,7 +9,7 @@ import { catchError } from 'rxjs/operators';
 
 @Injectable()
 export class LocalAdapter implements ITranscriptor {
-  constructor(private readonly httpService: HttpService) { }
+  constructor(private readonly httpService: HttpService) {}
 
   async transcribir(
     audioInput: ReadStream | string,
@@ -56,7 +56,7 @@ export class LocalAdapter implements ITranscriptor {
 
       console.log(`� Enviando JSON a ${localEndpoint}:`, payload);
 
-      const response = await firstValueFrom(
+      const response = (await firstValueFrom(
         this.httpService
           .post(localEndpoint, payload, {
             headers: {
@@ -76,7 +76,7 @@ export class LocalAdapter implements ITranscriptor {
               );
             }),
           ),
-      ) as any;
+      )) as any;
 
       console.log('✅ Respuesta del servidor local:', response.data);
 

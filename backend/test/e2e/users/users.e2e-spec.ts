@@ -46,7 +46,10 @@ describe('Users E2E', () => {
     },
   };
 
-  const mockRoleEstudiante = { _id: '607f1f77bcf86cd799439301', name: 'estudiante' };
+  const mockRoleEstudiante = {
+    _id: '607f1f77bcf86cd799439301',
+    name: 'estudiante',
+  };
   const mockRoleDocente = { _id: '607f1f77bcf86cd799439302', name: 'docente' };
 
   beforeAll(async () => {
@@ -54,11 +57,17 @@ describe('Users E2E', () => {
     mockUserModel = jest.fn();
     mockUserModel.find = jest.fn().mockImplementation(() => chainable([]));
     mockUserModel.findOne = jest.fn().mockImplementation(() => chainable(null));
-    mockUserModel.findById = jest.fn().mockImplementation(() => chainable(null));
-    mockUserModel.findByIdAndDelete = jest.fn().mockImplementation(() => chainable(null));
+    mockUserModel.findById = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
+    mockUserModel.findByIdAndDelete = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
     mockUserModel.mockImplementation((data: any) => ({
       ...data,
-      save: jest.fn().mockResolvedValue({ _id: '507f1f77bcf86cd799439099', ...data }),
+      save: jest
+        .fn()
+        .mockResolvedValue({ _id: '507f1f77bcf86cd799439099', ...data }),
       toObject: () => ({ _id: '507f1f77bcf86cd799439099', ...data }),
     }));
 
@@ -66,7 +75,9 @@ describe('Users E2E', () => {
     mockRoleModel = jest.fn();
     mockRoleModel.find = jest.fn().mockImplementation(() => chainable([]));
     mockRoleModel.findOne = jest.fn().mockImplementation(() => chainable(null));
-    mockRoleModel.findById = jest.fn().mockImplementation(() => chainable(null));
+    mockRoleModel.findById = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
 
     // Mock Course model
     mockCourseModel = jest.fn();
@@ -134,7 +145,9 @@ describe('Users E2E', () => {
 
     it('201 con rol Admin crea usuario con rol por defecto', async () => {
       mockUserModel.findOne.mockImplementationOnce(() => chainable(null));
-      mockRoleModel.findOne.mockImplementationOnce(() => chainable(mockRoleEstudiante));
+      mockRoleModel.findOne.mockImplementationOnce(() =>
+        chainable(mockRoleEstudiante),
+      );
 
       const res = await request(app.getHttpServer())
         .post('/users')
@@ -147,12 +160,18 @@ describe('Users E2E', () => {
     });
 
     it('409 email duplicado', async () => {
-      mockUserModel.findOne.mockImplementationOnce(() => chainable(mockUsers.admin));
+      mockUserModel.findOne.mockImplementationOnce(() =>
+        chainable(mockUsers.admin),
+      );
 
       const res = await request(app.getHttpServer())
         .post('/users')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: 'Nuevo', email: mockUsers.admin.email, password: '123456' })
+        .send({
+          name: 'Nuevo',
+          email: mockUsers.admin.email,
+          password: '123456',
+        })
         .expect(409);
 
       expect(res.body).toHaveProperty('message');
@@ -165,7 +184,12 @@ describe('Users E2E', () => {
       const res = await request(app.getHttpServer())
         .post('/users')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: 'Nuevo', email: 'nuevo2@test.com', password: '123456', roleId: '607f1f77bcf86cd799439399' })
+        .send({
+          name: 'Nuevo',
+          email: 'nuevo2@test.com',
+          password: '123456',
+          roleId: '607f1f77bcf86cd799439399',
+        })
         .expect(404);
 
       expect(res.body).toHaveProperty('message');
@@ -185,7 +209,9 @@ describe('Users E2E', () => {
     });
 
     it('200 Admin lista todos', async () => {
-      mockUserModel.find.mockImplementationOnce(() => chainable([mockUsers.admin, mockUsers.docente]));
+      mockUserModel.find.mockImplementationOnce(() =>
+        chainable([mockUsers.admin, mockUsers.docente]),
+      );
 
       const res = await request(app.getHttpServer())
         .get('/users')
@@ -197,8 +223,12 @@ describe('Users E2E', () => {
     });
 
     it('200 filtrar por rol', async () => {
-      mockRoleModel.findOne.mockImplementationOnce(() => chainable(mockRoleDocente));
-      mockUserModel.find.mockImplementationOnce(() => chainable([mockUsers.docente]));
+      mockRoleModel.findOne.mockImplementationOnce(() =>
+        chainable(mockRoleDocente),
+      );
+      mockUserModel.find.mockImplementationOnce(() =>
+        chainable([mockUsers.docente]),
+      );
 
       const res = await request(app.getHttpServer())
         .get('/users?role=docente')
@@ -222,7 +252,9 @@ describe('Users E2E', () => {
 
   describe('GET /users/:id - Obtener usuario', () => {
     it('200 Admin obtiene usuario por ID', async () => {
-      mockUserModel.findById.mockImplementationOnce(() => chainable(mockUsers.docente));
+      mockUserModel.findById.mockImplementationOnce(() =>
+        chainable(mockUsers.docente),
+      );
 
       const res = await request(app.getHttpServer())
         .get(`/users/${mockUsers.docente._id}`)
@@ -257,7 +289,11 @@ describe('Users E2E', () => {
 
     it('200 admin actualiza usuario', async () => {
       const current = { ...mockUsers.estudiante, email: 'old@test.com' };
-      const updated = { ...current, name: 'Nuevo Nombre', toObject: () => ({ ...current, name: 'Nuevo Nombre' }) } as any;
+      const updated = {
+        ...current,
+        name: 'Nuevo Nombre',
+        toObject: () => ({ ...current, name: 'Nuevo Nombre' }),
+      } as any;
 
       mockUserModel.findById.mockImplementationOnce(() => chainable(current));
       mockUserModel.findOne.mockImplementationOnce(() => chainable(null)); // email no duplicado
@@ -275,7 +311,9 @@ describe('Users E2E', () => {
     it('409 email duplicado en actualización', async () => {
       const current = { ...mockUsers.estudiante, email: 'old@test.com' };
       mockUserModel.findById.mockImplementationOnce(() => chainable(current));
-      mockUserModel.findOne.mockImplementationOnce(() => chainable(mockUsers.admin));
+      mockUserModel.findOne.mockImplementationOnce(() =>
+        chainable(mockUsers.admin),
+      );
 
       const res = await request(app.getHttpServer())
         .patch(`/users/${mockUsers.estudiante._id}`)
@@ -316,7 +354,9 @@ describe('Users E2E', () => {
 
   describe('DELETE /users/:id - Eliminar usuario', () => {
     it('200 admin elimina usuario', async () => {
-      mockUserModel.findByIdAndDelete.mockImplementationOnce(() => chainable(mockUsers.estudiante));
+      mockUserModel.findByIdAndDelete.mockImplementationOnce(() =>
+        chainable(mockUsers.estudiante),
+      );
 
       await request(app.getHttpServer())
         .delete(`/users/${mockUsers.estudiante._id}`)
@@ -325,7 +365,9 @@ describe('Users E2E', () => {
     });
 
     it('404 usuario a eliminar no existe', async () => {
-      mockUserModel.findByIdAndDelete.mockImplementationOnce(() => chainable(null));
+      mockUserModel.findByIdAndDelete.mockImplementationOnce(() =>
+        chainable(null),
+      );
 
       const res = await request(app.getHttpServer())
         .delete('/users/507f1f77bcf86cd799439197')
@@ -338,9 +380,7 @@ describe('Users E2E', () => {
 
   describe('GET /users/my-teachers - Profesores del estudiante', () => {
     it('401 sin autenticación', async () => {
-      await request(app.getHttpServer())
-        .get('/users/my-teachers')
-        .expect(401);
+      await request(app.getHttpServer()).get('/users/my-teachers').expect(401);
     });
 
     it('403 admin no puede acceder', async () => {
@@ -351,7 +391,9 @@ describe('Users E2E', () => {
     });
 
     it('200 estudiante obtiene profesores', async () => {
-      mockUserModel.findById.mockImplementationOnce(() => chainable(mockUsers.estudiante));
+      mockUserModel.findById.mockImplementationOnce(() =>
+        chainable(mockUsers.estudiante),
+      );
       const mockCourses = [
         {
           name: 'Curso A',

@@ -11,19 +11,17 @@ import { User, UserDocument } from '../schemas/user.schema';
 
 /**
  * Guard que verifica que el usuario solo pueda acceder a sus propios datos
- * 
+ *
  * Uso:
  * @UseGuards(JwtAuthGuard, UserOwnershipGuard)
  * @Get('users/:userId')
  * async getUser(@Param('userId') userId: string) { ... }
- * 
+ *
  * El usuario en el JWT debe coincidir con el userId del parámetro
  */
 @Injectable()
 export class UserOwnershipGuard implements CanActivate {
-  constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
-  ) {}
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();

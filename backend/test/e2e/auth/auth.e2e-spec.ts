@@ -23,29 +23,63 @@ describe('Auth E2E', () => {
 
   const authServiceMock: Partial<Record<keyof AuthService, any>> = {
     login: jest.fn().mockResolvedValue({ message: 'Code sent' }),
-    verifyCode: jest.fn().mockResolvedValue({ token: 'jwt.token', user: { id: ids.estudiante, email: 'user@test.com', roles: ['estudiante'] } }),
-    register: jest.fn().mockResolvedValue({ id: 'new-user-id', email: 'new@test.com' }),
-    getProfile: jest.fn().mockResolvedValue({ id: ids.admin, email: 'admin@test.com', roles: ['administrador'], permissions: ['create:course'] }),
+    verifyCode: jest.fn().mockResolvedValue({
+      token: 'jwt.token',
+      user: {
+        id: ids.estudiante,
+        email: 'user@test.com',
+        roles: ['estudiante'],
+      },
+    }),
+    register: jest
+      .fn()
+      .mockResolvedValue({ id: 'new-user-id', email: 'new@test.com' }),
+    getProfile: jest.fn().mockResolvedValue({
+      id: ids.admin,
+      email: 'admin@test.com',
+      roles: ['administrador'],
+      permissions: ['create:course'],
+    }),
     forgotPassword: jest.fn().mockResolvedValue({ message: 'Email sent' }),
     resetPassword: jest.fn().mockResolvedValue({ message: 'Password updated' }),
   } as any;
 
   beforeAll(async () => {
     ({ app, module: moduleRef } = await createTestApp({
-      overrides: [
-        { token: AuthService, useValue: authServiceMock },
-      ],
+      overrides: [{ token: AuthService, useValue: authServiceMock }],
       globalPipes: true,
     }));
 
     jwtService = moduleRef.get<JwtService>(JwtService);
-    adminToken = jwtService.sign({ sub: ids.admin, email: 'admin@test.com', name: 'Admin', roles: ['administrador'], permissions: ['create:course'] });
-    docenteToken = jwtService.sign({ sub: ids.docente, email: 'docente@test.com', name: 'Docente', roles: ['docente'], permissions: [] });
-    estudianteToken = jwtService.sign({ sub: ids.estudiante, email: 'estu@test.com', name: 'Estudiante', roles: ['estudiante'], permissions: [] });
+    adminToken = jwtService.sign({
+      sub: ids.admin,
+      email: 'admin@test.com',
+      name: 'Admin',
+      roles: ['administrador'],
+      permissions: ['create:course'],
+    });
+    docenteToken = jwtService.sign({
+      sub: ids.docente,
+      email: 'docente@test.com',
+      name: 'Docente',
+      roles: ['docente'],
+      permissions: [],
+    });
+    estudianteToken = jwtService.sign({
+      sub: ids.estudiante,
+      email: 'estu@test.com',
+      name: 'Estudiante',
+      roles: ['estudiante'],
+      permissions: [],
+    });
   });
 
-  afterAll(async () => { await app.close(); });
-  afterEach(() => { jest.clearAllMocks(); });
+  afterAll(async () => {
+    await app.close();
+  });
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   describe('POST /auth/login', () => {
     it('200 envía código', async () => {
@@ -104,7 +138,11 @@ describe('Auth E2E', () => {
     it('200 actualiza contraseña', async () => {
       const res = await request(app.getHttpServer())
         .post('/auth/reset-password')
-        .send({ token: 'reset-token', newPassword: '123456', confirmPassword: '123456' })
+        .send({
+          token: 'reset-token',
+          newPassword: '123456',
+          confirmPassword: '123456',
+        })
         .expect(200);
       expect(res.body).toHaveProperty('message');
     });

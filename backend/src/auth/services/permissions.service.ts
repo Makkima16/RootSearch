@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Permission, PermissionDocument } from '../schemas/permission.schema';
@@ -8,11 +12,14 @@ import { UpdatePermissionDto } from '../dto/update-permission.dto';
 @Injectable()
 export class PermissionsService {
   constructor(
-    @InjectModel(Permission.name) private permissionModel: Model<PermissionDocument>,
+    @InjectModel(Permission.name)
+    private permissionModel: Model<PermissionDocument>,
   ) {}
 
   async create(createPermissionDto: CreatePermissionDto): Promise<Permission> {
-    const existing = await this.permissionModel.findOne({ name: createPermissionDto.name }).exec();
+    const existing = await this.permissionModel
+      .findOne({ name: createPermissionDto.name })
+      .exec();
     if (existing) {
       throw new ConflictException('El permiso ya existe');
     }
@@ -32,7 +39,10 @@ export class PermissionsService {
     return permission;
   }
 
-  async update(id: string, updatePermissionDto: UpdatePermissionDto): Promise<Permission> {
+  async update(
+    id: string,
+    updatePermissionDto: UpdatePermissionDto,
+  ): Promise<Permission> {
     const updatedPermission = await this.permissionModel
       .findByIdAndUpdate(id, updatePermissionDto, { new: true })
       .exec();

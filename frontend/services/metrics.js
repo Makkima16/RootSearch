@@ -1,5 +1,47 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
+const EMPTY_COURSE_STATS = {
+  averageStudents: 0,
+  courseWithMostStudents: null,
+  courseWithLeastStudents: null,
+};
+
+function calcularEstadisticasCursos(courses) {
+  if (!Array.isArray(courses) || courses.length === 0) {
+    return { ...EMPTY_COURSE_STATS };
+  }
+
+  const coursesWithStudentCount = courses.map((course) => ({
+    ...course,
+    studentCount: Array.isArray(course.students) ? course.students.length : 0,
+  }));
+
+  const totalStudents = coursesWithStudentCount.reduce(
+    (sum, course) => sum + course.studentCount,
+    0
+  );
+  const averageStudents = totalStudents / coursesWithStudentCount.length;
+
+  const courseWithMostStudents = coursesWithStudentCount.reduce((max, course) =>
+    course.studentCount > max.studentCount ? course : max
+  );
+  const courseWithLeastStudents = coursesWithStudentCount.reduce((min, course) =>
+    course.studentCount < min.studentCount ? course : min
+  );
+
+  return {
+    averageStudents: parseFloat(averageStudents.toFixed(1)),
+    courseWithMostStudents: {
+      name: courseWithMostStudents.name,
+      studentCount: courseWithMostStudents.studentCount,
+    },
+    courseWithLeastStudents: {
+      name: courseWithLeastStudents.name,
+      studentCount: courseWithLeastStudents.studentCount,
+    },
+  };
+}
+
 /**
  * Obtiene el total de estudiantes del sistema (solo administradores)
  */
@@ -101,47 +143,7 @@ export async function getGlobalCourseStatistics() {
       throw new Error('Error fetching courses');
     }
 
-    const courses = await response.json();
-    
-    if (!Array.isArray(courses) || courses.length === 0) {
-      return {
-        averageStudents: 0,
-        courseWithMostStudents: null,
-        courseWithLeastStudents: null,
-      };
-    }
-
-    // Calcular número de estudiantes por curso
-    const coursesWithStudentCount = courses.map(course => ({
-      ...course,
-      studentCount: Array.isArray(course.students) ? course.students.length : 0,
-    }));
-
-    // Promedio de estudiantes
-    const totalStudents = coursesWithStudentCount.reduce((sum, course) => sum + course.studentCount, 0);
-    const averageStudents = totalStudents / courses.length;
-
-    // Curso con más estudiantes
-    const courseWithMostStudents = coursesWithStudentCount.reduce((max, course) => 
-      course.studentCount > max.studentCount ? course : max
-    );
-
-    // Curso con menos estudiantes
-    const courseWithLeastStudents = coursesWithStudentCount.reduce((min, course) => 
-      course.studentCount < min.studentCount ? course : min
-    );
-
-    return {
-      averageStudents: parseFloat(averageStudents.toFixed(1)),
-      courseWithMostStudents: {
-        name: courseWithMostStudents.name,
-        studentCount: courseWithMostStudents.studentCount,
-      },
-      courseWithLeastStudents: {
-        name: courseWithLeastStudents.name,
-        studentCount: courseWithLeastStudents.studentCount,
-      },
-    };
+    return calcularEstadisticasCursos(await response.json());
   } catch (error) {
     console.error('Error in getGlobalCourseStatistics:', error);
     return {
@@ -307,47 +309,7 @@ export async function getCourseStatistics(teacherId) {
       throw new Error('Error fetching teacher courses');
     }
 
-    const courses = await response.json();
-    
-    if (!Array.isArray(courses) || courses.length === 0) {
-      return {
-        averageStudents: 0,
-        courseWithMostStudents: null,
-        courseWithLeastStudents: null,
-      };
-    }
-
-    // Calcular número de estudiantes por curso
-    const coursesWithStudentCount = courses.map(course => ({
-      ...course,
-      studentCount: Array.isArray(course.students) ? course.students.length : 0,
-    }));
-
-    // Promedio de estudiantes
-    const totalStudents = coursesWithStudentCount.reduce((sum, course) => sum + course.studentCount, 0);
-    const averageStudents = totalStudents / courses.length;
-
-    // Curso con más estudiantes
-    const courseWithMostStudents = coursesWithStudentCount.reduce((max, course) => 
-      course.studentCount > max.studentCount ? course : max
-    );
-
-    // Curso con menos estudiantes
-    const courseWithLeastStudents = coursesWithStudentCount.reduce((min, course) => 
-      course.studentCount < min.studentCount ? course : min
-    );
-
-    return {
-      averageStudents: parseFloat(averageStudents.toFixed(1)),
-      courseWithMostStudents: {
-        name: courseWithMostStudents.name,
-        studentCount: courseWithMostStudents.studentCount,
-      },
-      courseWithLeastStudents: {
-        name: courseWithLeastStudents.name,
-        studentCount: courseWithLeastStudents.studentCount,
-      },
-    };
+    return calcularEstadisticasCursos(await response.json());
   } catch (error) {
     console.error('Error in getCourseStatistics:', error);
     return {

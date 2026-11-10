@@ -1,45 +1,44 @@
-# Dependencies
+# Dependencias
 node_modules/
-backend/node_modules/
-frontend/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
-# Production builds
+# Builds
 dist/
 build/
 .next/
 out/
+*.tsbuildinfo
 
-# Coverage
+# Tests y cobertura
 coverage/
+*.lcov
 
-# Environment variables
+# Variables de entorno
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+!.env.example
 
-# IDE
+# Archivos subidos en desarrollo
+uploads/
+
+# IDE / editores
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
+# Sistema operativo
 .DS_Store
 Thumbs.db
 
-# Logs
-logs
+# Logs y temporales
+logs/
 *.log
-
-# Coverage
-coverage/
-*.lcov
-
-# Temporary files
 .tmp/
 temp/

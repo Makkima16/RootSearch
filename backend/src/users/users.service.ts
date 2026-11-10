@@ -11,9 +11,7 @@ import { Role, RoleDocument } from '../auth/schemas/role.schema';
 import { Course, CourseDocument } from '../courses/schemas/course.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import {
-  TeacherCourseInfoDto,
-} from './dto/teacher-course-info.dto';
+import { TeacherCourseInfoDto } from './dto/teacher-course-info.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()

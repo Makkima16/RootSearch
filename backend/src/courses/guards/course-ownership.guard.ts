@@ -11,14 +11,14 @@ import { Course, CourseDocument } from '../../courses/schemas/course.schema';
 
 /**
  * Guard que verifica que solo el docente creador del curso pueda modificarlo
- * 
+ *
  * Uso:
  * @UseGuards(JwtAuthGuard, CourseOwnershipGuard)
  * @Put('courses/:courseId')
  * @Patch('courses/:courseId')
  * @Delete('courses/:courseId')
  * async updateCourse(@Param('courseId') courseId: string) { ... }
- * 
+ *
  * Solo el docente que creó el curso (instructor) puede modificarlo
  * Los administradores también pueden modificar cualquier curso
  */
@@ -58,7 +58,7 @@ export class CourseOwnershipGuard implements CanActivate {
 
     // Verificar que el usuario sea el docente del curso
     const teacherId = (course.teacher as any)._id || course.teacher;
-    
+
     if (teacherId.toString() !== user.id) {
       throw new ForbiddenException(
         'Solo el docente del curso puede realizar esta acción',

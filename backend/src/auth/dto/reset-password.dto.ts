@@ -19,7 +19,9 @@ export class ResetPasswordDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
-  @MaxLength(50, { message: 'La contraseña no puede tener más de 50 caracteres' })
+  @MaxLength(50, {
+    message: 'La contraseña no puede tener más de 50 caracteres',
+  })
   newPassword: string;
 
   @ApiProperty({

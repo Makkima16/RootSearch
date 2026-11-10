@@ -7,7 +7,6 @@ import { JwtService } from '@nestjs/jwt';
 import { createTestApp, chainable } from '../utils/test-app';
 import { Permission } from '../../../src/auth/schemas/permission.schema';
 
-
 describe('Permissions E2E', () => {
   let app: INestApplication;
   let moduleRef: TestingModule;
@@ -38,20 +37,35 @@ describe('Permissions E2E', () => {
   beforeAll(async () => {
     // Constructor y métodos chainables por defecto
     mockPermissionModel = jest.fn();
-    mockPermissionModel.find = jest.fn().mockImplementation(() => chainable([]));
-    mockPermissionModel.findOne = jest.fn().mockImplementation(() => chainable(null));
-    mockPermissionModel.findById = jest.fn().mockImplementation(() => chainable(null));
-    mockPermissionModel.findByIdAndUpdate = jest.fn().mockImplementation(() => chainable(null));
-    mockPermissionModel.findByIdAndDelete = jest.fn().mockImplementation(() => chainable(null));
+    mockPermissionModel.find = jest
+      .fn()
+      .mockImplementation(() => chainable([]));
+    mockPermissionModel.findOne = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
+    mockPermissionModel.findById = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
+    mockPermissionModel.findByIdAndUpdate = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
+    mockPermissionModel.findByIdAndDelete = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
     mockPermissionModel.create = jest.fn();
     mockPermissionModel.mockImplementation((data: any) => ({
       ...data,
-      save: jest.fn().mockResolvedValue({ _id: '607f1f77bcf86cd799439099', ...data }),
+      save: jest
+        .fn()
+        .mockResolvedValue({ _id: '607f1f77bcf86cd799439099', ...data }),
     }));
 
     ({ app, module: moduleRef } = await createTestApp({
       overrides: [
-        { token: getModelToken(Permission.name), useValue: mockPermissionModel },
+        {
+          token: getModelToken(Permission.name),
+          useValue: mockPermissionModel,
+        },
       ],
       globalPipes: true,
     }));
@@ -121,21 +135,34 @@ describe('Permissions E2E', () => {
       const response = await request(app.getHttpServer())
         .post('/permissions')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: mockPermissions.createUser.name, description: mockPermissions.createUser.description, method: mockPermissions.createUser.method })
+        .send({
+          name: mockPermissions.createUser.name,
+          description: mockPermissions.createUser.description,
+          method: mockPermissions.createUser.method,
+        })
         .expect(201);
 
       expect(response.body).toHaveProperty('_id');
-      expect(response.body).toHaveProperty('name', mockPermissions.createUser.name);
+      expect(response.body).toHaveProperty(
+        'name',
+        mockPermissions.createUser.name,
+      );
       expect(mockPermissionModel).toHaveBeenCalled();
     });
 
     it('debe fallar al crear permiso duplicado (409)', async () => {
-      mockPermissionModel.findOne.mockImplementationOnce(() => chainable(mockPermissions.createUser));
+      mockPermissionModel.findOne.mockImplementationOnce(() =>
+        chainable(mockPermissions.createUser),
+      );
 
       const response = await request(app.getHttpServer())
         .post('/permissions')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: mockPermissions.createUser.name, description: '...', method: 'POST' })
+        .send({
+          name: mockPermissions.createUser.name,
+          description: '...',
+          method: 'POST',
+        })
         .expect(409);
 
       expect(response.body).toHaveProperty('message');
@@ -155,7 +182,9 @@ describe('Permissions E2E', () => {
     });
 
     it('debe obtener permisos exitosamente con rol Admin (200)', async () => {
-      mockPermissionModel.find.mockImplementationOnce(() => chainable(Object.values(mockPermissions)));
+      mockPermissionModel.find.mockImplementationOnce(() =>
+        chainable(Object.values(mockPermissions)),
+      );
 
       const response = await request(app.getHttpServer())
         .get('/permissions')
@@ -169,7 +198,9 @@ describe('Permissions E2E', () => {
 
   describe('GET /permissions/:id - Obtener permiso por ID', () => {
     it('debe obtener un permiso específico exitosamente (200)', async () => {
-      mockPermissionModel.findById.mockImplementationOnce(() => chainable(mockPermissions.readUser));
+      mockPermissionModel.findById.mockImplementationOnce(() =>
+        chainable(mockPermissions.readUser),
+      );
 
       const response = await request(app.getHttpServer())
         .get(`/permissions/${mockPermissions.readUser._id}`)
@@ -177,11 +208,16 @@ describe('Permissions E2E', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('_id', mockPermissions.readUser._id);
-      expect(response.body).toHaveProperty('name', mockPermissions.readUser.name);
+      expect(response.body).toHaveProperty(
+        'name',
+        mockPermissions.readUser.name,
+      );
     });
 
     it('debe fallar cuando el permiso no existe (404)', async () => {
-      mockPermissionModel.findById.mockImplementationOnce(() => chainable(null));
+      mockPermissionModel.findById.mockImplementationOnce(() =>
+        chainable(null),
+      );
 
       const response = await request(app.getHttpServer())
         .get('/permissions/607f1f77bcf86cd799439099')
@@ -194,8 +230,13 @@ describe('Permissions E2E', () => {
 
   describe('PATCH /permissions/:id - Actualizar permiso', () => {
     it('debe actualizar un permiso exitosamente (200)', async () => {
-      const updated = { ...mockPermissions.readUser, description: 'Nueva desc' };
-      mockPermissionModel.findByIdAndUpdate.mockImplementationOnce(() => chainable(updated));
+      const updated = {
+        ...mockPermissions.readUser,
+        description: 'Nueva desc',
+      };
+      mockPermissionModel.findByIdAndUpdate.mockImplementationOnce(() =>
+        chainable(updated),
+      );
 
       const response = await request(app.getHttpServer())
         .patch(`/permissions/${mockPermissions.readUser._id}`)
@@ -207,7 +248,9 @@ describe('Permissions E2E', () => {
     });
 
     it('debe fallar al actualizar permiso inexistente (404)', async () => {
-      mockPermissionModel.findByIdAndUpdate.mockImplementationOnce(() => chainable(null));
+      mockPermissionModel.findByIdAndUpdate.mockImplementationOnce(() =>
+        chainable(null),
+      );
 
       const response = await request(app.getHttpServer())
         .patch('/permissions/607f1f77bcf86cd799439099')
@@ -221,7 +264,9 @@ describe('Permissions E2E', () => {
 
   describe('DELETE /permissions/:id - Eliminar permiso', () => {
     it('debe eliminar un permiso exitosamente (200)', async () => {
-      mockPermissionModel.findByIdAndDelete.mockImplementationOnce(() => chainable(mockPermissions.createUser));
+      mockPermissionModel.findByIdAndDelete.mockImplementationOnce(() =>
+        chainable(mockPermissions.createUser),
+      );
 
       await request(app.getHttpServer())
         .delete(`/permissions/${mockPermissions.createUser._id}`)
@@ -230,7 +275,9 @@ describe('Permissions E2E', () => {
     });
 
     it('debe fallar al eliminar permiso inexistente (404)', async () => {
-      mockPermissionModel.findByIdAndDelete.mockImplementationOnce(() => chainable(null));
+      mockPermissionModel.findByIdAndDelete.mockImplementationOnce(() =>
+        chainable(null),
+      );
 
       const response = await request(app.getHttpServer())
         .delete('/permissions/607f1f77bcf86cd799439099')

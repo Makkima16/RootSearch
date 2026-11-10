@@ -1,6 +1,13 @@
 import { Injectable, BadRequestException, Inject } from '@nestjs/common';
-import { IMaterialUploadStrategy, StoreContext, StoreResult } from '../interfaces/material-upload-strategy.interface';
-import { CourseMaterialType, CourseMaterialStatus } from '../schemas/course-material.schema';
+import {
+  IMaterialUploadStrategy,
+  StoreContext,
+  StoreResult,
+} from '../interfaces/material-upload-strategy.interface';
+import {
+  CourseMaterialType,
+  CourseMaterialStatus,
+} from '../schemas/course-material.schema';
 import { Express } from 'express';
 import { IFileStorage, FILE_STORAGE } from '../storage/file-storage.interface';
 
@@ -9,9 +16,7 @@ export class VideoUploadStrategy implements IMaterialUploadStrategy {
   constructor(@Inject(FILE_STORAGE) private readonly storage: IFileStorage) {}
 
   supports(mime: string, ext: string): boolean {
-    return (
-      mime.startsWith('video/') || ['.mp4', '.mkv', '.webm'].includes(ext)
-    );
+    return mime.startsWith('video/') || ['.mp4', '.mkv', '.webm'].includes(ext);
   }
 
   getType(): CourseMaterialType {
@@ -24,12 +29,20 @@ export class VideoUploadStrategy implements IMaterialUploadStrategy {
     }
   }
 
-  async store(file: Express.Multer.File, ctx: StoreContext): Promise<StoreResult> {
+  async store(
+    file: Express.Multer.File,
+    ctx: StoreContext,
+  ): Promise<StoreResult> {
     const result = await this.storage.store(file);
     return { storageRef: result.ref, provider: result.provider };
   }
 
-  buildMetadata(file: Express.Multer.File, store: StoreResult, _pre?: any, ctx?: StoreContext) {
+  buildMetadata(
+    file: Express.Multer.File,
+    store: StoreResult,
+    _pre?: any,
+    ctx?: StoreContext,
+  ) {
     if (!ctx) {
       throw new Error('Context is required for building metadata');
     }

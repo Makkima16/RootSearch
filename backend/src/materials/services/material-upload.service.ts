@@ -3,7 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CourseMaterial } from '../schemas/course-material.schema';
 import { MaterialListItemDto } from '../dto/material-list-item.dto';
-import { IMaterialUploadStrategy, MATERIAL_UPLOAD_STRATEGIES } from '../interfaces/material-upload-strategy.interface';
+import {
+  IMaterialUploadStrategy,
+  MATERIAL_UPLOAD_STRATEGIES,
+} from '../interfaces/material-upload-strategy.interface';
 import { FILE_STORAGE, IFileStorage } from '../storage/file-storage.interface';
 import { Response } from 'express';
 import * as path from 'path';
@@ -30,7 +33,8 @@ export class MaterialUploadService {
   private readonly logger = new Logger(MaterialUploadService.name);
 
   constructor(
-    @InjectModel(CourseMaterial.name) private materialModel: Model<CourseMaterial>,
+    @InjectModel(CourseMaterial.name)
+    private materialModel: Model<CourseMaterial>,
     @Inject(MATERIAL_UPLOAD_STRATEGIES)
     private strategies: IMaterialUploadStrategy[],
     @Inject(FILE_STORAGE) private storage: IFileStorage,
@@ -38,25 +42,36 @@ export class MaterialUploadService {
 
   private resolveStrategy(file: Express.Multer.File): IMaterialUploadStrategy {
     const ext = path.extname(file.originalname).toLowerCase();
-    const strategy = this.strategies.find((s) => s.supports(file.mimetype, ext));
+    const strategy = this.strategies.find((s) =>
+      s.supports(file.mimetype, ext),
+    );
     if (!strategy) {
       throw new Error(`Tipo de archivo no soportado: ${file.mimetype}`);
     }
     return strategy;
   }
 
-  async upload(courseId: string, uploaderId: string, files: Express.Multer.File[], dto?: { title?: string; description?: string }): Promise<UploadResult[]> {
+  async upload(
+    courseId: string,
+    uploaderId: string,
+    files: Express.Multer.File[],
+    dto?: { title?: string; description?: string },
+  ): Promise<UploadResult[]> {
     const results: UploadResult[] = [];
     for (const file of files) {
       const strategy = this.resolveStrategy(file);
       strategy.validate(file);
       const store = await strategy.store(file, { courseId, uploaderId, dto });
-      const metadata = strategy.buildMetadata(file, store, undefined, { courseId, uploaderId, dto });
+      const metadata = strategy.buildMetadata(file, store, undefined, {
+        courseId,
+        uploaderId,
+        dto,
+      });
       const created = new this.materialModel(metadata);
       await created.save();
       const accessUrl = this.storage.getAccessUrl(store.storageRef);
-      results.push({ 
-        id: String(created._id), 
+      results.push({
+        id: String(created._id),
         accessUrl,
         courseId: created.courseId,
         uploaderId: created.uploaderId,
@@ -69,13 +84,15 @@ export class MaterialUploadService {
         storageRef: created.storageRef,
         title: created.title,
         description: created.description,
-        status: created.status
+        status: created.status,
       });
     }
     return results;
   }
 
-  async getAccessUrlById(id: string): Promise<{ accessUrl: string; material: CourseMaterial }> {
+  async getAccessUrlById(
+    id: string,
+  ): Promise<{ accessUrl: string; material: CourseMaterial }> {
     const material = await this.materialModel.findById(id).exec();
     if (!material) {
       throw new Error('Material no encontrado');
@@ -84,7 +101,10 @@ export class MaterialUploadService {
     return { accessUrl, material };
   }
 
-  async getAccessUrlByTitle(title: string, courseId?: string): Promise<{ accessUrl: string; material: CourseMaterial }> {
+  async getAccessUrlByTitle(
+    title: string,
+    courseId?: string,
+  ): Promise<{ accessUrl: string; material: CourseMaterial }> {
     const filter: any = { title };
     if (courseId) filter.courseId = courseId;
     const material = await this.materialModel.findOne(filter).exec();
@@ -98,10 +118,13 @@ export class MaterialUploadService {
   async streamById(id: string, res: Response): Promise<void> {
     const material = await this.materialModel.findById(id).exec();
     if (!material) throw new Error('Material no encontrado');
-    const { stream, filename, mime, size } = await this.storage.getFileStream(material.storageRef);
+    const { stream, filename, mime, size } = await this.storage.getFileStream(
+      material.storageRef,
+    );
     if (mime) res.setHeader('Content-Type', mime);
     if (size) res.setHeader('Content-Length', String(size));
-    const safeName = filename || material.originalName || material.filename || 'file';
+    const safeName =
+      filename || material.originalName || material.filename || 'file';
     res.setHeader('Content-Disposition', `attachment; filename="${safeName}"`);
     stream.pipe(res);
   }

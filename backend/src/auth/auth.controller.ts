@@ -34,7 +34,9 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Iniciar sesión - Envía código de verificación por email' })
+  @ApiOperation({
+    summary: 'Iniciar sesión - Envía código de verificación por email',
+  })
   @ApiBody({ type: LoginDto })
   @ApiResponse({
     status: 200,
@@ -59,11 +61,14 @@ export class AuthController {
   }
 
   @Post('register')
-  @ApiOperation({ summary: 'Registrar nuevo usuario - Envía código de verificación por email' })
+  @ApiOperation({
+    summary: 'Registrar nuevo usuario - Envía código de verificación por email',
+  })
   @ApiBody({ type: RegisterDto })
   @ApiResponse({
     status: 201,
-    description: 'Usuario registrado exitosamente. Código de verificación enviado al correo electrónico.',
+    description:
+      'Usuario registrado exitosamente. Código de verificación enviado al correo electrónico.',
   })
   @ApiResponse({ status: 409, description: 'El email ya está registrado' })
   async register(@Body() registerDto: RegisterDto) {

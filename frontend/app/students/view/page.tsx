@@ -2,12 +2,11 @@
 
 import { getUserById, getUserProfile } from '@/services/users';
 import SideBar from '@/components/SideBar';
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
-export default function StudentProfile() {
+function StudentProfileContent() {
   const searchParams = useSearchParams();
   const studentId = searchParams.get('studentId');
 
@@ -154,5 +153,19 @@ export default function StudentProfile() {
 
       </main>
     </div>
+  );
+}
+
+export default function StudentProfile() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#050214] text-white">
+          Cargando estudiante...
+        </div>
+      }
+    >
+      <StudentProfileContent />
+    </Suspense>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Link from "next/link";
 
 interface User {
   name: string;
@@ -131,7 +132,7 @@ export default function SideBar({ user }: SideBarProps) {
             </h2>
             {user?.role === "estudiante" ? (
               <a
-                href="/comunication"
+                href="/communication"
                 className="flex items-center gap-2 py-1 px-3 rounded-lg hover:bg-[#7165E9] transition mb-2"
               >
                 <img
@@ -168,7 +169,7 @@ export default function SideBar({ user }: SideBarProps) {
               </a>
             ) : (
               <a
-                href="/Materials"
+                href="/materials"
                 className="flex items-center gap-2 py-1 px-3 rounded-lg hover:bg-[#7165E9] transition"
               >
                 <img
@@ -203,7 +204,7 @@ export default function SideBar({ user }: SideBarProps) {
               />
               {!isMinimized && "Configuración Usuario"}
             </a>
-            <a
+            <Link
               href="/"
               className="flex items-center gap-2 py-1 px-3 rounded-lg hover:bg-[#7165E9] transition"
               onClick={() => {
@@ -216,7 +217,7 @@ export default function SideBar({ user }: SideBarProps) {
                 className="w-6 h-6 ml-0.5 "
               />
               {!isMinimized && "Logout"}
-            </a>
+            </Link>
           </div>
         </nav>
 

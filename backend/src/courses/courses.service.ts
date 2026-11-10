@@ -21,12 +21,12 @@ export class CoursesService {
     @InjectModel(Course.name) private courseModel: Model<CourseDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
-  ) { }
+  ) {}
 
   async create(
     createCourseDto: CreateCourseDto,
     user?: UserDocument,
-    file?: any
+    file?: any,
   ): Promise<Course> {
     let piaaText = createCourseDto.piaa_syllabus || '';
     let piaBase64 = createCourseDto.pia || '';
@@ -36,7 +36,7 @@ export class CoursesService {
       try {
         // Convertir buffer a Base64
         piaBase64 = file.buffer.toString('base64');
-        
+
         // Opcional: Si aún queremos extraer texto para búsquedas, podemos dejarlo,
         // pero la prioridad ahora es guardar el archivo.
         // Por ahora, mantenemos la extracción de texto como secundario si se desea.
@@ -156,7 +156,7 @@ export class CoursesService {
   async update(
     id: string,
     updateCourseDto: UpdateCourseDto,
-    file?: any
+    file?: any,
   ): Promise<Course> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('ID de curso inválido');
@@ -361,7 +361,10 @@ export class CoursesService {
     const roles = user.roles as any[];
 
     for (const role of roles) {
-      if (typeof role === 'object' && role.name.toUpperCase() === roleName.toUpperCase()) {
+      if (
+        typeof role === 'object' &&
+        role.name.toUpperCase() === roleName.toUpperCase()
+      ) {
         return true;
       } else if (typeof role === 'string' || role instanceof Types.ObjectId) {
         const roleDoc = await this.roleModel.findById(role).exec();

@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { verifyCode } from "../../../services/users";
 import Toast from "../../../components/Toast";
 
-export default function VerifyPage() {
+function VerifyForm() {
 const [code, setCode] = useState<number | "">("");
 const [loading, setLoading] = useState(false);
 const [toast, setToast] = useState<{ show: boolean; message: string; type?: "info" | "success" | "error" }>({
@@ -90,4 +90,18 @@ return ( <div className="min-h-screen flex items-center justify-center bg-[#0502
 
 
 );
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#050214] text-white">
+          Cargando...
+        </div>
+      }
+    >
+      <VerifyForm />
+    </Suspense>
+  );
 }

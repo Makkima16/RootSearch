@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { getAllStudents } from "../../../services/students";
 import { getUserProfile } from "../../../services/users";
-import Image from "next/image";
 import SideBar from "@/components/SideBar";
 import { FaUserGraduate } from "react-icons/fa";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";

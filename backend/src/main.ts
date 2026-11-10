@@ -1,9 +1,10 @@
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
   // Habilitar validación global
@@ -15,8 +16,12 @@ async function bootstrap() {
     }),
   );
 
-  // Habilitar CORS
-  app.enableCors();
+  // CORS restringido al frontend (lista separada por comas en CORS_ORIGIN)
+  const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:3000')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  app.enableCors({ origin: corsOrigins, credentials: true });
 
   // Configuración de Swagger
   const config = new DocumentBuilder()
@@ -45,12 +50,10 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(
-    `🚀 Aplicación corriendo en: http://localhost:${process.env.PORT ?? 3000}`,
-  );
-  console.log(
-    `📚 Documentación Swagger: http://localhost:${process.env.PORT ?? 3000}/api`,
-  );
+  const port = Number(process.env.PORT ?? 3001);
+  await app.listen(port);
+
+  logger.log(`Aplicación corriendo en: http://localhost:${port}`);
+  logger.log(`Documentación Swagger: http://localhost:${port}/api`);
 }
 bootstrap();

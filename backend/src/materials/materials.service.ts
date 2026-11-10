@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, Inject, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Transcription } from '../transcription/schemas/transcription.schema';
@@ -40,7 +46,7 @@ export class MaterialsService {
     @Inject(TRANSCRIPTOR_SERVICE) private transcriptor: ITranscriptor,
     @Inject(FILE_STORAGE) private storage: IFileStorage,
     private emailService: EmailService,
-  ) { }
+  ) {}
 
   async processAudioForCourse(
     file: Express.Multer.File,
@@ -239,12 +245,10 @@ export class MaterialsService {
   }
 
   async publish(id: string) {
-    const material = await this.materialModel
-      .findById(id)
-      .populate({
-        path: 'transcriptionId',
-        populate: { path: 'userId' },
-      });
+    const material = await this.materialModel.findById(id).populate({
+      path: 'transcriptionId',
+      populate: { path: 'userId' },
+    });
 
     if (!material) {
       throw new NotFoundException(`Material con ID ${id} no encontrado`);

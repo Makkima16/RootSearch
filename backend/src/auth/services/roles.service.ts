@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Role, RoleDocument } from '../schemas/role.schema';
@@ -8,26 +13,34 @@ import { UpdateRoleDto } from '../dto/update-role.dto';
 
 @Injectable()
 export class RolesService {
-  private readonly PROTECTED_ROLES = ['admin', 'administrador', 'docente', 'estudiante'];
+  private readonly PROTECTED_ROLES = [
+    'admin',
+    'administrador',
+    'docente',
+    'estudiante',
+  ];
 
   constructor(
     @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
-    @InjectModel(Permission.name) private permissionModel: Model<PermissionDocument>,
+    @InjectModel(Permission.name)
+    private permissionModel: Model<PermissionDocument>,
   ) {}
 
   async create(createRoleDto: CreateRoleDto): Promise<Role> {
-    const existing = await this.roleModel.findOne({ name: createRoleDto.name }).exec();
+    const existing = await this.roleModel
+      .findOne({ name: createRoleDto.name })
+      .exec();
     if (existing) {
       throw new ConflictException('El rol ya existe');
     }
 
     if (createRoleDto.permissions && createRoleDto.permissions.length > 0) {
-        const count = await this.permissionModel.countDocuments({
-            _id: { $in: createRoleDto.permissions }
-        });
-        if (count !== createRoleDto.permissions.length) {
-            throw new NotFoundException('Uno o más permisos no existen');
-        }
+      const count = await this.permissionModel.countDocuments({
+        _id: { $in: createRoleDto.permissions },
+      });
+      if (count !== createRoleDto.permissions.length) {
+        throw new NotFoundException('Uno o más permisos no existen');
+      }
     }
 
     const createdRole = new this.roleModel(createRoleDto);
@@ -39,7 +52,10 @@ export class RolesService {
   }
 
   async findOne(id: string): Promise<Role> {
-    const role = await this.roleModel.findById(id).populate('permissions').exec();
+    const role = await this.roleModel
+      .findById(id)
+      .populate('permissions')
+      .exec();
     if (!role) {
       throw new NotFoundException(`Rol con ID ${id} no encontrado`);
     }

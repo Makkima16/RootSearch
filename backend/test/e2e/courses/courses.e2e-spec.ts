@@ -35,8 +35,12 @@ describe('Courses E2E', () => {
     // Mock Course model
     mockCourseModel = jest.fn();
     mockCourseModel.find = jest.fn().mockImplementation(() => chainable([]));
-    mockCourseModel.findById = jest.fn().mockImplementation(() => chainable(null));
-    mockCourseModel.findByIdAndDelete = jest.fn().mockImplementation(() => chainable(null));
+    mockCourseModel.findById = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
+    mockCourseModel.findByIdAndDelete = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
     mockCourseModel.mockImplementation((data: any) => ({
       ...data,
       _id: ids.course,
@@ -45,11 +49,15 @@ describe('Courses E2E', () => {
 
     // Mock User model
     mockUserModel = jest.fn();
-    mockUserModel.findById = jest.fn().mockImplementation(() => chainable(null));
+    mockUserModel.findById = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
 
     // Mock Role model (no-op by defecto)
     mockRoleModel = jest.fn();
-    mockRoleModel.findById = jest.fn().mockImplementation(() => chainable(null));
+    mockRoleModel.findById = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
 
     ({ app, module: moduleRef } = await createTestApp({
       overrides: [
@@ -62,13 +70,32 @@ describe('Courses E2E', () => {
 
     jwtService = moduleRef.get<JwtService>(JwtService);
 
-    adminToken = jwtService.sign({ sub: ids.admin, email: 'admin@test.com', roles: ['administrador'], permissions: [] });
-    docenteToken = jwtService.sign({ sub: ids.docente, email: 'docente@test.com', roles: ['docente'], permissions: [] });
-    estudianteToken = jwtService.sign({ sub: ids.estudiante, email: 'estudiante@test.com', roles: ['estudiante'], permissions: [] });
+    adminToken = jwtService.sign({
+      sub: ids.admin,
+      email: 'admin@test.com',
+      roles: ['administrador'],
+      permissions: [],
+    });
+    docenteToken = jwtService.sign({
+      sub: ids.docente,
+      email: 'docente@test.com',
+      roles: ['docente'],
+      permissions: [],
+    });
+    estudianteToken = jwtService.sign({
+      sub: ids.estudiante,
+      email: 'estudiante@test.com',
+      roles: ['estudiante'],
+      permissions: [],
+    });
   });
 
-  afterAll(async () => { await app.close(); });
-  afterEach(() => { jest.clearAllMocks(); });
+  afterAll(async () => {
+    await app.close();
+  });
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   describe('POST /courses - Crear curso', () => {
     it('401 sin autenticación', async () => {
@@ -92,19 +119,43 @@ describe('Courses E2E', () => {
 
     it('201 Admin crea curso con docente válido y estudiantes', async () => {
       // Docente válido (rol docente)
-      mockUserModel.findById.mockImplementationOnce(() => chainable({ _id: ids.docente, roles: [{ name: 'docente' }], name: 'Prof', email: 'prof@test.com' }));
+      mockUserModel.findById.mockImplementationOnce(() =>
+        chainable({
+          _id: ids.docente,
+          roles: [{ name: 'docente' }],
+          name: 'Prof',
+          email: 'prof@test.com',
+        }),
+      );
       // Validación de estudiantes: estudiante A
-      mockUserModel.findById.mockImplementationOnce(() => chainable({ _id: ids.studentA, roles: [{ name: 'estudiante' }], name: 'Est A' }));
+      mockUserModel.findById.mockImplementationOnce(() =>
+        chainable({
+          _id: ids.studentA,
+          roles: [{ name: 'estudiante' }],
+          name: 'Est A',
+        }),
+      );
       // estudiante B
-      mockUserModel.findById.mockImplementationOnce(() => chainable({ _id: ids.studentB, roles: [{ name: 'estudiante' }], name: 'Est B' }));
+      mockUserModel.findById.mockImplementationOnce(() =>
+        chainable({
+          _id: ids.studentB,
+          roles: [{ name: 'estudiante' }],
+          name: 'Est B',
+        }),
+      );
       // findById tras guardar curso
-      mockCourseModel.findById.mockImplementationOnce(() => chainable({
-        _id: ids.course,
-        name: 'Curso X',
-        description: 'Desc',
-        teacher: { name: 'Prof', email: 'prof@test.com' },
-        students: [ { name: 'Est A', email: 'a@test.com' }, { name: 'Est B', email: 'b@test.com' } ],
-      }));
+      mockCourseModel.findById.mockImplementationOnce(() =>
+        chainable({
+          _id: ids.course,
+          name: 'Curso X',
+          description: 'Desc',
+          teacher: { name: 'Prof', email: 'prof@test.com' },
+          students: [
+            { name: 'Est A', email: 'a@test.com' },
+            { name: 'Est B', email: 'b@test.com' },
+          ],
+        }),
+      );
 
       const res = await request(app.getHttpServer())
         .post('/courses')
@@ -134,7 +185,9 @@ describe('Courses E2E', () => {
     });
 
     it('400 docente sin rol DOCENTE', async () => {
-      mockUserModel.findById.mockImplementationOnce(() => chainable({ _id: ids.docente, roles: [{ name: 'administrador' }] }));
+      mockUserModel.findById.mockImplementationOnce(() =>
+        chainable({ _id: ids.docente, roles: [{ name: 'administrador' }] }),
+      );
 
       const res = await request(app.getHttpServer())
         .post('/courses')
@@ -154,7 +207,9 @@ describe('Courses E2E', () => {
     });
 
     it('200 con rol Docente', async () => {
-      mockCourseModel.find.mockImplementationOnce(() => chainable([{ _id: ids.course, name: 'Curso X' }]));
+      mockCourseModel.find.mockImplementationOnce(() =>
+        chainable([{ _id: ids.course, name: 'Curso X' }]),
+      );
 
       const res = await request(app.getHttpServer())
         .get('/courses')
@@ -165,7 +220,9 @@ describe('Courses E2E', () => {
     });
 
     it('200 por teacher query', async () => {
-      mockCourseModel.find.mockImplementationOnce(() => chainable([{ _id: ids.course, name: 'Curso X' }]));
+      mockCourseModel.find.mockImplementationOnce(() =>
+        chainable([{ _id: ids.course, name: 'Curso X' }]),
+      );
 
       const res = await request(app.getHttpServer())
         .get(`/courses?teacher=${ids.docente}`)
@@ -176,7 +233,9 @@ describe('Courses E2E', () => {
     });
 
     it('200 por student query', async () => {
-      mockCourseModel.find.mockImplementationOnce(() => chainable([{ _id: ids.course, name: 'Curso X' }]));
+      mockCourseModel.find.mockImplementationOnce(() =>
+        chainable([{ _id: ids.course, name: 'Curso X' }]),
+      );
 
       const res = await request(app.getHttpServer())
         .get(`/courses?student=${ids.estudiante}`)
@@ -196,7 +255,9 @@ describe('Courses E2E', () => {
     });
 
     it('200 admin', async () => {
-      mockCourseModel.find.mockImplementationOnce(() => chainable([{ _id: ids.course, name: 'Curso X' }]));
+      mockCourseModel.find.mockImplementationOnce(() =>
+        chainable([{ _id: ids.course, name: 'Curso X' }]),
+      );
 
       const res = await request(app.getHttpServer())
         .get('/courses/all')
@@ -209,7 +270,9 @@ describe('Courses E2E', () => {
 
   describe('GET /courses/:id - Detalle curso', () => {
     it('200 curso encontrado', async () => {
-      mockCourseModel.findById.mockImplementationOnce(() => chainable({ _id: ids.course, name: 'Curso X' }));
+      mockCourseModel.findById.mockImplementationOnce(() =>
+        chainable({ _id: ids.course, name: 'Curso X' }),
+      );
 
       const res = await request(app.getHttpServer())
         .get(`/courses/${ids.course}`)
@@ -241,9 +304,15 @@ describe('Courses E2E', () => {
     });
 
     it('200 admin actualiza nombre', async () => {
-      const current = { _id: ids.course, name: 'Curso X', save: jest.fn().mockResolvedValue({ _id: ids.course }) } as any;
+      const current = {
+        _id: ids.course,
+        name: 'Curso X',
+        save: jest.fn().mockResolvedValue({ _id: ids.course }),
+      } as any;
       mockCourseModel.findById.mockImplementationOnce(() => chainable(current));
-      mockCourseModel.findById.mockImplementationOnce(() => chainable({ _id: ids.course, name: 'Nuevo' }));
+      mockCourseModel.findById.mockImplementationOnce(() =>
+        chainable({ _id: ids.course, name: 'Nuevo' }),
+      );
 
       const res = await request(app.getHttpServer())
         .patch(`/courses/${ids.course}`)
@@ -267,7 +336,11 @@ describe('Courses E2E', () => {
     });
 
     it('404 profesor nuevo no existe', async () => {
-      const current = { _id: ids.course, name: 'Curso X', save: jest.fn().mockResolvedValue({ _id: ids.course }) } as any;
+      const current = {
+        _id: ids.course,
+        name: 'Curso X',
+        save: jest.fn().mockResolvedValue({ _id: ids.course }),
+      } as any;
       mockCourseModel.findById.mockImplementationOnce(() => chainable(current));
       mockUserModel.findById.mockImplementationOnce(() => chainable(null));
 
@@ -281,9 +354,15 @@ describe('Courses E2E', () => {
     });
 
     it('400 profesor nuevo sin rol DOCENTE', async () => {
-      const current = { _id: ids.course, name: 'Curso X', save: jest.fn().mockResolvedValue({ _id: ids.course }) } as any;
+      const current = {
+        _id: ids.course,
+        name: 'Curso X',
+        save: jest.fn().mockResolvedValue({ _id: ids.course }),
+      } as any;
       mockCourseModel.findById.mockImplementationOnce(() => chainable(current));
-      mockUserModel.findById.mockImplementationOnce(() => chainable({ _id: ids.docente, roles: [{ name: 'administrador' }] }));
+      mockUserModel.findById.mockImplementationOnce(() =>
+        chainable({ _id: ids.docente, roles: [{ name: 'administrador' }] }),
+      );
 
       const res = await request(app.getHttpServer())
         .patch(`/courses/${ids.course}`)
@@ -297,11 +376,32 @@ describe('Courses E2E', () => {
 
   describe('POST /courses/:id/enroll - Inscribir estudiantes', () => {
     it('200 inscribe nuevos estudiantes', async () => {
-      const current = { _id: ids.course, students: [], save: jest.fn().mockResolvedValue({ _id: ids.course }) } as any;
+      const current = {
+        _id: ids.course,
+        students: [],
+        save: jest.fn().mockResolvedValue({ _id: ids.course }),
+      } as any;
       mockCourseModel.findById.mockImplementationOnce(() => chainable(current));
-      mockUserModel.findById.mockImplementationOnce(() => chainable({ _id: ids.studentA, roles: [{ name: 'estudiante' }], name: 'Est A' }));
-      mockUserModel.findById.mockImplementationOnce(() => chainable({ _id: ids.studentB, roles: [{ name: 'estudiante' }], name: 'Est B' }));
-      mockCourseModel.findById.mockImplementationOnce(() => chainable({ _id: ids.course, students: [{ name: 'Est A' }, { name: 'Est B' }] }));
+      mockUserModel.findById.mockImplementationOnce(() =>
+        chainable({
+          _id: ids.studentA,
+          roles: [{ name: 'estudiante' }],
+          name: 'Est A',
+        }),
+      );
+      mockUserModel.findById.mockImplementationOnce(() =>
+        chainable({
+          _id: ids.studentB,
+          roles: [{ name: 'estudiante' }],
+          name: 'Est B',
+        }),
+      );
+      mockCourseModel.findById.mockImplementationOnce(() =>
+        chainable({
+          _id: ids.course,
+          students: [{ name: 'Est A' }, { name: 'Est B' }],
+        }),
+      );
 
       const res = await request(app.getHttpServer())
         .post(`/courses/${ids.course}/enroll`)
@@ -313,9 +413,19 @@ describe('Courses E2E', () => {
     });
 
     it('400 usuario no es estudiante', async () => {
-      const current = { _id: ids.course, students: [], save: jest.fn().mockResolvedValue({ _id: ids.course }) } as any;
+      const current = {
+        _id: ids.course,
+        students: [],
+        save: jest.fn().mockResolvedValue({ _id: ids.course }),
+      } as any;
       mockCourseModel.findById.mockImplementationOnce(() => chainable(current));
-      mockUserModel.findById.mockImplementationOnce(() => chainable({ _id: ids.studentA, roles: [{ name: 'docente' }], name: 'No Est' }));
+      mockUserModel.findById.mockImplementationOnce(() =>
+        chainable({
+          _id: ids.studentA,
+          roles: [{ name: 'docente' }],
+          name: 'No Est',
+        }),
+      );
 
       const res = await request(app.getHttpServer())
         .post(`/courses/${ids.course}/enroll`)
@@ -329,9 +439,18 @@ describe('Courses E2E', () => {
 
   describe('POST /courses/:id/unenroll - Desinscribir estudiantes', () => {
     it('200 remueve estudiantes', async () => {
-      const current = { _id: ids.course, students: [{ toString: () => ids.studentA }, { toString: () => ids.studentB }], save: jest.fn().mockResolvedValue({ _id: ids.course }) } as any;
+      const current = {
+        _id: ids.course,
+        students: [
+          { toString: () => ids.studentA },
+          { toString: () => ids.studentB },
+        ],
+        save: jest.fn().mockResolvedValue({ _id: ids.course }),
+      } as any;
       mockCourseModel.findById.mockImplementationOnce(() => chainable(current));
-      mockCourseModel.findById.mockImplementationOnce(() => chainable({ _id: ids.course, students: [] }));
+      mockCourseModel.findById.mockImplementationOnce(() =>
+        chainable({ _id: ids.course, students: [] }),
+      );
 
       const res = await request(app.getHttpServer())
         .post(`/courses/${ids.course}/unenroll`)
@@ -352,7 +471,9 @@ describe('Courses E2E', () => {
     });
 
     it('200 admin elimina curso', async () => {
-      mockCourseModel.findByIdAndDelete.mockImplementationOnce(() => chainable({ _id: ids.course }));
+      mockCourseModel.findByIdAndDelete.mockImplementationOnce(() =>
+        chainable({ _id: ids.course }),
+      );
 
       await request(app.getHttpServer())
         .delete(`/courses/${ids.course}`)
@@ -361,7 +482,9 @@ describe('Courses E2E', () => {
     });
 
     it('404 curso no existe', async () => {
-      mockCourseModel.findByIdAndDelete.mockImplementationOnce(() => chainable(null));
+      mockCourseModel.findByIdAndDelete.mockImplementationOnce(() =>
+        chainable(null),
+      );
 
       const res = await request(app.getHttpServer())
         .delete('/courses/607f1f77bcf86cd799439588')
@@ -374,7 +497,9 @@ describe('Courses E2E', () => {
 
   describe('GET /courses/by-teacher/:teacherId', () => {
     it('200 lista por profesor', async () => {
-      mockCourseModel.find.mockImplementationOnce(() => chainable([{ _id: ids.course, name: 'Curso X' }]));
+      mockCourseModel.find.mockImplementationOnce(() =>
+        chainable([{ _id: ids.course, name: 'Curso X' }]),
+      );
 
       const res = await request(app.getHttpServer())
         .get(`/courses/by-teacher/${ids.docente}`)

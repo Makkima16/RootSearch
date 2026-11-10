@@ -17,7 +17,10 @@ export interface FileStreamResult {
 }
 
 export interface IFileStorage {
-  store(file: Express.Multer.File, options?: Record<string, any>): Promise<StoreFileResult>;
+  store(
+    file: Express.Multer.File,
+    options?: Record<string, any>,
+  ): Promise<StoreFileResult>;
   getAccessUrl(ref: string): string;
   getFileStream(ref: string): Promise<FileStreamResult>;
 }

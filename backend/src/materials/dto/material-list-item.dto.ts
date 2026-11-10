@@ -35,7 +35,8 @@ export class MaterialListItemDto {
 
   @ApiProperty({
     description: 'Referencia o URL de acceso en el proveedor de almacenamiento',
-    example: 'https://drive.google.com/file/d/1PahYtniPC_kAwRxaOSYWBoz3HwCTcQkA/view',
+    example:
+      'https://drive.google.com/file/d/1PahYtniPC_kAwRxaOSYWBoz3HwCTcQkA/view',
   })
   storageRef: string;
 

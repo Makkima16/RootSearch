@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getCourseById, enrollStudentsToCourse, unenrollStudentsFromCourse } from '../../../services/courses';
 import { getUserProfile } from '../../../services/users';
@@ -34,7 +34,7 @@ type Course = {
   updatedAt: string;
 };
 
-export default function CourseViewPage() {
+function CourseViewPageContent() {
   const searchParams = useSearchParams();
   const courseId = searchParams.get('courseId');
   
@@ -1500,5 +1500,19 @@ export default function CourseViewPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function CourseViewPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#050214] text-white">
+          Cargando curso...
+        </div>
+      }
+    >
+      <CourseViewPageContent />
+    </Suspense>
   );
 }

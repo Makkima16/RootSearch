@@ -2,7 +2,7 @@
 
 import { getUserById, getUserProfile, updateUserProfile, getAvailableRoles } from '@/services/users';
 import SideBar from '@/components/SideBar';
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from 'next/navigation';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { FaEdit, FaSave, FaTimes } from 'react-icons/fa';
@@ -13,7 +13,7 @@ type Role = {
   name: string;
 };
 
-export default function UserProfile() {
+function UserProfileContent() {
   const searchParams = useSearchParams();
   const userId = searchParams.get('userId');
 
@@ -405,5 +405,19 @@ export default function UserProfile() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function UserProfile() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#050214] text-white">
+          Cargando usuario...
+        </div>
+      }
+    >
+      <UserProfileContent />
+    </Suspense>
   );
 }

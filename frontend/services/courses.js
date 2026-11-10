@@ -94,10 +94,7 @@ export async function getAllCourses(userId, filterType = 'both') {
 
 export async function getAllCoursesForAdmin() {
   const token = localStorage.getItem('access_token');
-  
-  console.log('Token being sent:', token ? 'Token exists' : 'NO TOKEN');
-  console.log('Request URL:', `${API_URL}/courses/all`);
-  
+
   const response = await fetch(`${API_URL}/courses/all`, {
     method: 'GET',
     headers: {
@@ -106,11 +103,8 @@ export async function getAllCoursesForAdmin() {
     },
   });
 
-  console.log('Response status:', response.status);
-  
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
-    console.error('Error response:', errorData);
     throw new Error(errorData?.message || `Error fetching all courses for admin (${response.status})`);
   }
 

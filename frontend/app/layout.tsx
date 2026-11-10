@@ -13,8 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RootSearch",
-  description: "An Application for students and teachers to share and find resources",
+  title: {
+    default: "RootSearch",
+    template: "%s | RootSearch",
+  },
+  description:
+    "Plataforma educativa para estudiantes y docentes: cursos, materiales adaptativos y contenido generado con IA.",
 };
 
 export default function RootLayout({
@@ -23,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

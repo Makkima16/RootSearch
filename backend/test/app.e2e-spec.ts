@@ -66,7 +66,9 @@ describe('RootSearch E2E Tests', () => {
       email: 'admin@test.com',
       password: '', // Se generará en beforeAll
       roles: [mockRoles.admin],
-      toObject: function() { return { ...this, password: undefined }; },
+      toObject: function () {
+        return { ...this, password: undefined };
+      },
     },
     docente: {
       _id: '507f1f77bcf86cd799439022',
@@ -74,7 +76,9 @@ describe('RootSearch E2E Tests', () => {
       email: 'docente@test.com',
       password: '', // Se generará en beforeAll
       roles: [mockRoles.docente],
-      toObject: function() { return { ...this, password: undefined }; },
+      toObject: function () {
+        return { ...this, password: undefined };
+      },
     },
     estudiante: {
       _id: '507f1f77bcf86cd799439023',
@@ -82,7 +86,9 @@ describe('RootSearch E2E Tests', () => {
       email: 'estudiante@test.com',
       password: '', // Se generará en beforeAll
       roles: [mockRoles.estudiante],
-      toObject: function() { return { ...this, password: undefined }; },
+      toObject: function () {
+        return { ...this, password: undefined };
+      },
     },
   };
 
@@ -118,9 +124,13 @@ describe('RootSearch E2E Tests', () => {
     // Mock del UserModel - act as constructor and provide chainable query defaults
     mockUserModel = jest.fn();
     mockUserModel.findOne = jest.fn().mockImplementation(() => chainable(null));
-    mockUserModel.findById = jest.fn().mockImplementation(() => chainable(null));
+    mockUserModel.findById = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
     mockUserModel.create = jest.fn().mockResolvedValue(null);
-    mockUserModel.findByIdAndUpdate = jest.fn().mockImplementation(() => chainable(null));
+    mockUserModel.findByIdAndUpdate = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
     mockUserModel.find = jest.fn().mockImplementation(() => chainable([]));
     // when used as `new UserModel(dto)` return an object with save() and toObject()
     mockUserModel.mockImplementation((data: any) => ({
@@ -128,12 +138,12 @@ describe('RootSearch E2E Tests', () => {
       save: jest.fn().mockResolvedValue({
         _id: '507f1f77bcf86cd799439099',
         ...data,
-        toObject: function() {
+        toObject: function () {
           const { password, ...rest } = this;
           return rest;
         },
       }),
-      toObject: function() {
+      toObject: function () {
         const { password, ...rest } = this;
         return rest;
       },
@@ -142,47 +152,75 @@ describe('RootSearch E2E Tests', () => {
     // Mock del RoleModel - siempre retornar chainable
     mockRoleModel = jest.fn();
     mockRoleModel.findOne = jest.fn().mockImplementation(() => chainable(null));
-    mockRoleModel.findById = jest.fn().mockImplementation(() => chainable(mockRoles.estudiante));
-    mockRoleModel.findByIdAndUpdate = jest.fn().mockImplementation(() => chainable(null));
-    mockRoleModel.findByIdAndDelete = jest.fn().mockImplementation(() => chainable(null));
+    mockRoleModel.findById = jest
+      .fn()
+      .mockImplementation(() => chainable(mockRoles.estudiante));
+    mockRoleModel.findByIdAndUpdate = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
+    mockRoleModel.findByIdAndDelete = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
     mockRoleModel.create = jest.fn();
     mockRoleModel.find = jest.fn().mockImplementation(() => chainable([]));
     // Constructor behavior
     mockRoleModel.mockImplementation((data: any) => ({
       ...data,
-      save: jest.fn().mockResolvedValue({ _id: '607f1f77bcf86cd799439099', ...data }),
+      save: jest
+        .fn()
+        .mockResolvedValue({ _id: '607f1f77bcf86cd799439099', ...data }),
     }));
 
     // Mock del CourseModel as a constructor function and provide chainable defaults
     mockCourseModel = jest.fn();
-    mockCourseModel.findById = jest.fn().mockImplementation(() => chainable(null));
+    mockCourseModel.findById = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
     mockCourseModel.create = jest.fn().mockResolvedValue(null);
-    mockCourseModel.findByIdAndUpdate = jest.fn().mockImplementation(() => chainable(null));
+    mockCourseModel.findByIdAndUpdate = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
     mockCourseModel.find = jest.fn().mockImplementation(() => chainable([]));
     // default constructor behavior
     mockCourseModel.mockImplementation((data: any) => ({
       ...data,
-      save: jest.fn().mockResolvedValue({ 
-        _id: '507f1f77bcf86cd799439099', 
+      save: jest.fn().mockResolvedValue({
+        _id: '507f1f77bcf86cd799439099',
         ...data,
-        toObject: function() { return this; },
+        toObject: function () {
+          return this;
+        },
       }),
-      toObject: function() { return this; },
+      toObject: function () {
+        return this;
+      },
     }));
 
     // Mock del PermissionModel
     mockPermissionModel = jest.fn();
-    mockPermissionModel.find = jest.fn().mockImplementation(() => chainable([]));
-    mockPermissionModel.findOne = jest.fn().mockImplementation(() => chainable(null));
-    mockPermissionModel.findById = jest.fn().mockImplementation(() => chainable(null));
-    mockPermissionModel.findByIdAndUpdate = jest.fn().mockImplementation(() => chainable(null));
-    mockPermissionModel.findByIdAndDelete = jest.fn().mockImplementation(() => chainable(null));
+    mockPermissionModel.find = jest
+      .fn()
+      .mockImplementation(() => chainable([]));
+    mockPermissionModel.findOne = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
+    mockPermissionModel.findById = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
+    mockPermissionModel.findByIdAndUpdate = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
+    mockPermissionModel.findByIdAndDelete = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
     mockPermissionModel.countDocuments = jest.fn().mockResolvedValue(0);
     mockPermissionModel.create = jest.fn();
     // Constructor behavior
     mockPermissionModel.mockImplementation((data: any) => ({
       ...data,
-      save: jest.fn().mockResolvedValue({ _id: '607f1f77bcf86cd799439099', ...data }),
+      save: jest
+        .fn()
+        .mockResolvedValue({ _id: '607f1f77bcf86cd799439099', ...data }),
     }));
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -250,7 +288,10 @@ describe('RootSearch E2E Tests', () => {
           populate: jest.fn().mockReturnValue({
             exec: jest.fn().mockResolvedValue({
               ...mockUsers.estudiante,
-              toObject: () => ({ ...mockUsers.estudiante, password: undefined }),
+              toObject: () => ({
+                ...mockUsers.estudiante,
+                password: undefined,
+              }),
             }),
           }),
         });
@@ -295,7 +336,10 @@ describe('RootSearch E2E Tests', () => {
           })
           .expect(401);
 
-        expect(response.body).toHaveProperty('message', 'Credenciales inválidas');
+        expect(response.body).toHaveProperty(
+          'message',
+          'Credenciales inválidas',
+        );
       });
 
       it('debe retornar 401 cuando el usuario no existe', async () => {
@@ -313,7 +357,10 @@ describe('RootSearch E2E Tests', () => {
           })
           .expect(401);
 
-        expect(response.body).toHaveProperty('message', 'Credenciales inválidas');
+        expect(response.body).toHaveProperty(
+          'message',
+          'Credenciales inválidas',
+        );
       });
     });
   });
@@ -327,7 +374,7 @@ describe('RootSearch E2E Tests', () => {
       it('debe fallar al crear usuario sin token (401)', async () => {
         // Configurar mocks para que findOne retorne null (email no existe)
         mockUserModel.findOne.mockImplementationOnce(() => chainable(null));
-        
+
         const response = await request(app.getHttpServer())
           .post('/users')
           .send({
@@ -427,11 +474,13 @@ describe('RootSearch E2E Tests', () => {
         mockUserModel.find.mockReturnValue({
           populate: jest.fn().mockReturnValue({
             select: jest.fn().mockReturnValue({
-              exec: jest.fn().mockResolvedValue([
-                mockUsers.admin,
-                mockUsers.docente,
-                mockUsers.estudiante,
-              ]),
+              exec: jest
+                .fn()
+                .mockResolvedValue([
+                  mockUsers.admin,
+                  mockUsers.docente,
+                  mockUsers.estudiante,
+                ]),
             }),
           }),
         });
@@ -733,12 +782,14 @@ describe('RootSearch E2E Tests', () => {
           }),
         });
 
-        mockCourseModel.find.mockReturnValue(chainable([
-          {
-            ...mockCourse,
-            students: [mockUsers.estudiante._id],
-          },
-        ]));
+        mockCourseModel.find.mockReturnValue(
+          chainable([
+            {
+              ...mockCourse,
+              students: [mockUsers.estudiante._id],
+            },
+          ]),
+        );
 
         const response = await request(app.getHttpServer())
           .get('/courses')
@@ -772,11 +823,13 @@ describe('RootSearch E2E Tests', () => {
           }),
         });
 
-        mockCourseModel.find.mockReturnValue(chainable([
-          mockCourse,
-          { ...mockCourse, _id: '507f1f77bcf86cd799439032' },
-          { ...mockCourse, _id: '507f1f77bcf86cd799439033' },
-        ]));
+        mockCourseModel.find.mockReturnValue(
+          chainable([
+            mockCourse,
+            { ...mockCourse, _id: '507f1f77bcf86cd799439032' },
+            { ...mockCourse, _id: '507f1f77bcf86cd799439033' },
+          ]),
+        );
 
         const response = await request(app.getHttpServer())
           .get('/courses')
@@ -1034,11 +1087,13 @@ describe('RootSearch E2E Tests', () => {
         });
 
         mockPermissionModel.find.mockReturnValue({
-          exec: jest.fn().mockResolvedValue([
-            mockPermissions.createUser,
-            mockPermissions.readUser,
-            mockPermissions.updateUser,
-          ]),
+          exec: jest
+            .fn()
+            .mockResolvedValue([
+              mockPermissions.createUser,
+              mockPermissions.readUser,
+              mockPermissions.updateUser,
+            ]),
         });
 
         const response = await request(app.getHttpServer())
@@ -1070,7 +1125,10 @@ describe('RootSearch E2E Tests', () => {
           .set('Authorization', `Bearer ${adminToken}`)
           .expect(200);
 
-        expect(response.body).toHaveProperty('_id', mockPermissions.createUser._id);
+        expect(response.body).toHaveProperty(
+          '_id',
+          mockPermissions.createUser._id,
+        );
         expect(response.body).toHaveProperty('name', 'create:user');
       });
 
@@ -1119,7 +1177,10 @@ describe('RootSearch E2E Tests', () => {
           })
           .expect(200);
 
-        expect(response.body).toHaveProperty('description', 'Permite crear nuevos usuarios en el sistema');
+        expect(response.body).toHaveProperty(
+          'description',
+          'Permite crear nuevos usuarios en el sistema',
+        );
       });
 
       it('debe fallar al actualizar permiso inexistente (404)', async () => {
@@ -1264,7 +1325,10 @@ describe('RootSearch E2E Tests', () => {
             _id: '607f1f77bcf86cd799439052',
             name: 'supervisor',
             description: 'Rol de supervisor',
-            permissions: ['607f1f77bcf86cd799439041', '607f1f77bcf86cd799439042'],
+            permissions: [
+              '607f1f77bcf86cd799439041',
+              '607f1f77bcf86cd799439042',
+            ],
           }),
         };
 
@@ -1276,7 +1340,10 @@ describe('RootSearch E2E Tests', () => {
           .send({
             name: 'supervisor',
             description: 'Rol de supervisor',
-            permissions: ['607f1f77bcf86cd799439041', '607f1f77bcf86cd799439042'],
+            permissions: [
+              '607f1f77bcf86cd799439041',
+              '607f1f77bcf86cd799439042',
+            ],
           })
           .expect(201);
 
@@ -1329,11 +1396,17 @@ describe('RootSearch E2E Tests', () => {
           .send({
             name: 'test-role',
             description: 'Rol de prueba',
-            permissions: ['607f1f77bcf86cd799439041', '607f1f77bcf86cd799439999'],
+            permissions: [
+              '607f1f77bcf86cd799439041',
+              '607f1f77bcf86cd799439999',
+            ],
           })
           .expect(404);
 
-        expect(response.body).toHaveProperty('message', 'Uno o más permisos no existen');
+        expect(response.body).toHaveProperty(
+          'message',
+          'Uno o más permisos no existen',
+        );
       });
     });
 
@@ -1370,12 +1443,14 @@ describe('RootSearch E2E Tests', () => {
 
         mockRoleModel.find.mockReturnValue({
           populate: jest.fn().mockReturnValue({
-            exec: jest.fn().mockResolvedValue([
-              mockRoles.admin,
-              mockRoles.docente,
-              mockRoles.estudiante,
-              mockCustomRole,
-            ]),
+            exec: jest
+              .fn()
+              .mockResolvedValue([
+                mockRoles.admin,
+                mockRoles.docente,
+                mockRoles.estudiante,
+                mockCustomRole,
+              ]),
           }),
         });
 
@@ -1470,7 +1545,10 @@ describe('RootSearch E2E Tests', () => {
           })
           .expect(200);
 
-        expect(response.body).toHaveProperty('description', 'Rol de moderador actualizado');
+        expect(response.body).toHaveProperty(
+          'description',
+          'Rol de moderador actualizado',
+        );
       });
 
       it('debe fallar al actualizar rol inexistente (404)', async () => {
@@ -1542,7 +1620,9 @@ describe('RootSearch E2E Tests', () => {
           .set('Authorization', `Bearer ${adminToken}`)
           .expect(200);
 
-        expect(mockRoleModel.findByIdAndDelete).toHaveBeenCalledWith(mockCustomRole._id);
+        expect(mockRoleModel.findByIdAndDelete).toHaveBeenCalledWith(
+          mockCustomRole._id,
+        );
       });
 
       it('debe fallar al eliminar rol protegido (400)', async () => {

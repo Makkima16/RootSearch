@@ -1,6 +1,6 @@
 // Servicios para usuarios: login y registro
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export async function loginUser({ email, password }) {
   const res = await fetch(`${API_URL}/auth/login`, {
@@ -299,4 +299,38 @@ export async function deleteUser(userId) {
   // Verificar si hay contenido antes de parsear JSON
   const text = await res.text();
   return text ? JSON.parse(text) : { success: true };
+}
+
+async function parseError(res, fallback) {
+  const data = await res.json().catch(() => null);
+  if (!data) return fallback;
+  return data.message || fallback;
+}
+
+export async function forgotPassword({ email }) {
+  const res = await fetch(`${API_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    return { error: await parseError(res, "Error al solicitar la recuperación") };
+  }
+
+  return res.json();
+}
+
+export async function resetPassword({ token, newPassword, confirmPassword }) {
+  const res = await fetch(`${API_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, newPassword, confirmPassword }),
+  });
+
+  if (!res.ok) {
+    return { error: await parseError(res, "Error al restablecer la contraseña") };
+  }
+
+  return res.json();
 }

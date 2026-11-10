@@ -3,7 +3,7 @@
     {
       "name": "Register User",
       "method": "POST",
-      "url": "http://localhost:3000/auth/register",
+      "url": "http://localhost:3001/auth/register",
       "headers": {
         "Content-Type": "application/json"
       },
@@ -16,7 +16,7 @@
     {
       "name": "Login Admin",
       "method": "POST",
-      "url": "http://localhost:3000/auth/login",
+      "url": "http://localhost:3001/auth/login",
       "headers": {
         "Content-Type": "application/json"
       },
@@ -28,7 +28,7 @@
     {
       "name": "Login User",
       "method": "POST",
-      "url": "http://localhost:3000/auth/login",
+      "url": "http://localhost:3001/auth/login",
       "headers": {
         "Content-Type": "application/json"
       },
@@ -40,7 +40,7 @@
     {
       "name": "Get Profile (Protected)",
       "method": "GET",
-      "url": "http://localhost:3000/auth/profile",
+      "url": "http://localhost:3001/auth/profile",
       "headers": {
         "Authorization": "Bearer YOUR_TOKEN_HERE"
       }
@@ -48,7 +48,7 @@
     {
       "name": "Admin Only (Requires ADMIN role)",
       "method": "GET",
-      "url": "http://localhost:3000/auth/admin-only",
+      "url": "http://localhost:3001/auth/admin-only",
       "headers": {
         "Authorization": "Bearer YOUR_ADMIN_TOKEN_HERE"
       }
@@ -56,7 +56,7 @@
     {
       "name": "Delete Permission (Requires permission)",
       "method": "GET",
-      "url": "http://localhost:3000/auth/delete-permission",
+      "url": "http://localhost:3001/auth/delete-permission",
       "headers": {
         "Authorization": "Bearer YOUR_ADMIN_TOKEN_HERE"
       }
@@ -64,7 +64,7 @@
     {
       "name": "Admin with Permission",
       "method": "GET",
-      "url": "http://localhost:3000/auth/admin-with-permission",
+      "url": "http://localhost:3001/auth/admin-with-permission",
       "headers": {
         "Authorization": "Bearer YOUR_ADMIN_TOKEN_HERE"
       }

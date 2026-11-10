@@ -19,12 +19,12 @@ import { CONTENT_GENERATOR } from './adapters/content-generation.interface';
         openAiAdapter: OpenAiAdapter,
       ) => {
         const mode = config.get<string>('CONTENT_GENERATION_MODE', 'LOCAL');
-        
+
         if (mode === 'CLOUD') {
           console.log('🧠 Modo de generación de contenido: CLOUD (OpenAI)');
           return openAiAdapter;
         }
-        
+
         console.log('🧠 Modo de generación de contenido: LOCAL (LM Studio)');
         return lmStudioAdapter;
       },
@@ -32,4 +32,4 @@ import { CONTENT_GENERATOR } from './adapters/content-generation.interface';
   ],
   exports: [CONTENT_GENERATOR],
 })
-export class ContentGenerationModule { }
+export class ContentGenerationModule {}

@@ -73,4 +73,5 @@ export class CourseMaterial extends Document {
   status: CourseMaterialStatus;
 }
 
-export const CourseMaterialSchema = SchemaFactory.createForClass(CourseMaterial);
+export const CourseMaterialSchema =
+  SchemaFactory.createForClass(CourseMaterial);

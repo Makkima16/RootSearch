@@ -2,24 +2,33 @@
 
 ## Propósito
 
-RootSearch es una plataforma web desarrollada para la asignatura de Ingeniería de Software III, que busca proporcionar una solución integral para la búsqueda y gestión de raíces matemáticas y algoritmos relacionados.
+RootSearch es una plataforma educativa desarrollada para la asignatura de
+Ingeniería de Software III. Su objetivo es centralizar la gestión de cursos,
+materiales de estudio y contenido adaptativo generado con inteligencia
+artificial, tanto para docentes como para estudiantes.
 
 ## Objetivos
 
-- Ofrecer una interfaz intuitiva para resolver ecuaciones y encontrar raíces.
-- Implementar algoritmos eficientes de búsqueda de raíces (bisección, Newton-Raphson, etc.).
-- Proporcionar visualizaciones interactivas de los procesos matemáticos.
-- Garantizar escalabilidad y mantenibilidad mediante una arquitectura de microservicios.
+- Facilitar a los docentes la creación y publicación de materiales de estudio.
+- Permitir a los estudiantes acceder a contenido adaptado a sus cursos.
+- Generar automáticamente resúmenes, quizzes, glosarios y checklists a partir de
+  transcripciones de clase.
+- Ofrecer métricas de cursos, materiales y usuarios.
+- Mantener una arquitectura mantenible y escalable mediante un monorepo.
 
 ## Alcance
 
-- Backend en NestJS para lógica de negocio y APIs.
-- Frontend en Next.js para interfaz de usuario moderna.
-- Base de datos PostgreSQL para almacenamiento de datos.
-- Contenerización con Docker para despliegue consistente.
+- Backend en NestJS con API REST documentada con Swagger.
+- Frontend en Next.js con App Router y Tailwind CSS.
+- Base de datos MongoDB.
+- Autenticación con JWT, verificación por correo y control de roles/permisos.
+- Procesamiento de audio y generación de contenido con adaptadores locales o en
+  la nube.
+- Contenerización con Docker y verificación automática en GitHub Actions.
 
-## Valor Agregado
+## Valor agregado
 
-- Educación: Herramienta pedagógica para estudiantes de matemáticas.
-- Eficiencia: Algoritmos optimizados para cálculos rápidos.
-- Accesibilidad: Interfaz web responsive y fácil de usar.
+- **Educación:** herramientas que apoyan el estudio y la preparación de clases.
+- **Automatización:** contenido de refuerzo generado a partir de audio real.
+- **Flexibilidad:** funcionamiento local sin coste o en la nube según el entorno.
+- **Accesibilidad:** interfaz web responsive para estudiantes y docentes.

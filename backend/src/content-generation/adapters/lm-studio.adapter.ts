@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import {
   IContentGenerator,
@@ -9,9 +10,16 @@ import {
 @Injectable()
 export class LmStudioAdapter implements IContentGenerator {
   private readonly logger = new Logger(LmStudioAdapter.name);
-  private readonly apiUrl = 'http://localhost:1234/v1/chat/completions';
+  private readonly apiUrl: string;
 
-  constructor(private readonly httpService: HttpService) { }
+  constructor(
+    private readonly httpService: HttpService,
+    configService: ConfigService,
+  ) {
+    this.apiUrl = `${
+      configService.get<string>('LM_STUDIO_URL') ?? 'http://localhost:1234'
+    }/v1/chat/completions`;
+  }
 
   async generarResumen(
     transcripcion: string,
@@ -90,7 +98,7 @@ export class LmStudioAdapter implements IContentGenerator {
       finalSystemPrompt += `\n\nCONTEXTO DEL PLAN DE ESTUDIOS (SYLLABUS):\n${contexto}\nUsa este contexto para mejorar la precisión y relevancia de tu respuesta.`;
     }
 
-    const { data } = await firstValueFrom(
+    const { data } = (await firstValueFrom(
       this.httpService.post(this.apiUrl, {
         model: 'local-model',
         messages: [
@@ -100,7 +108,7 @@ export class LmStudioAdapter implements IContentGenerator {
         temperature: temp,
         stream: false,
       }),
-    ) as any;
+    )) as any;
     return data.choices[0].message.content;
   }
 

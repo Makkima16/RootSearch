@@ -69,7 +69,10 @@ export class CreateCourseDto {
   })
   @Transform(({ value }) => {
     if (typeof value === 'string') {
-      return value.split(',').map(id => id.trim()).filter(id => id);
+      return value
+        .split(',')
+        .map((id) => id.trim())
+        .filter((id) => id);
     }
     if (Array.isArray(value)) {
       return value;

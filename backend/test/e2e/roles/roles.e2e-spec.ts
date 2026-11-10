@@ -48,12 +48,20 @@ describe('Roles E2E', () => {
     mockRoleModel = jest.fn();
     mockRoleModel.find = jest.fn().mockImplementation(() => chainable([]));
     mockRoleModel.findOne = jest.fn().mockImplementation(() => chainable(null));
-    mockRoleModel.findById = jest.fn().mockImplementation(() => chainable(null));
-    mockRoleModel.findByIdAndUpdate = jest.fn().mockImplementation(() => chainable(null));
-    mockRoleModel.findByIdAndDelete = jest.fn().mockImplementation(() => chainable(null));
+    mockRoleModel.findById = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
+    mockRoleModel.findByIdAndUpdate = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
+    mockRoleModel.findByIdAndDelete = jest
+      .fn()
+      .mockImplementation(() => chainable(null));
     mockRoleModel.mockImplementation((data: any) => ({
       ...data,
-      save: jest.fn().mockResolvedValue({ _id: '607f1f77bcf86cd799439199', ...data }),
+      save: jest
+        .fn()
+        .mockResolvedValue({ _id: '607f1f77bcf86cd799439199', ...data }),
     }));
 
     // Mock Permission model: solo countDocuments requerido
@@ -63,7 +71,10 @@ describe('Roles E2E', () => {
     ({ app, module: moduleRef } = await createTestApp({
       overrides: [
         { token: getModelToken(Role.name), useValue: mockRoleModel },
-        { token: getModelToken(Permission.name), useValue: mockPermissionModel },
+        {
+          token: getModelToken(Permission.name),
+          useValue: mockPermissionModel,
+        },
       ],
       globalPipes: true,
     }));
@@ -142,7 +153,9 @@ describe('Roles E2E', () => {
     });
 
     it('debe fallar al crear rol duplicado (409)', async () => {
-      mockRoleModel.findOne.mockImplementationOnce(() => chainable(mockRoles.custom));
+      mockRoleModel.findOne.mockImplementationOnce(() =>
+        chainable(mockRoles.custom),
+      );
 
       const res = await request(app.getHttpServer())
         .post('/roles')
@@ -160,7 +173,10 @@ describe('Roles E2E', () => {
       const res = await request(app.getHttpServer())
         .post('/roles')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: 'gestor', permissions: ['607f1f77bcf86cd799439041', '607f1f77bcf86cd799439042'] })
+        .send({
+          name: 'gestor',
+          permissions: ['607f1f77bcf86cd799439041', '607f1f77bcf86cd799439042'],
+        })
         .expect(404);
 
       expect(res.body).toHaveProperty('message');
@@ -180,7 +196,9 @@ describe('Roles E2E', () => {
     });
 
     it('debe listar roles exitosamente con Admin (200)', async () => {
-      mockRoleModel.find.mockImplementationOnce(() => chainable(Object.values(mockRoles)));
+      mockRoleModel.find.mockImplementationOnce(() =>
+        chainable(Object.values(mockRoles)),
+      );
 
       const res = await request(app.getHttpServer())
         .get('/roles')
@@ -194,7 +212,9 @@ describe('Roles E2E', () => {
 
   describe('GET /roles/:id - Obtener rol', () => {
     it('debe obtener un rol específico (200)', async () => {
-      mockRoleModel.findById.mockImplementationOnce(() => chainable(mockRoles.docente));
+      mockRoleModel.findById.mockImplementationOnce(() =>
+        chainable(mockRoles.docente),
+      );
 
       const res = await request(app.getHttpServer())
         .get(`/roles/${mockRoles.docente._id}`)
@@ -220,11 +240,16 @@ describe('Roles E2E', () => {
   describe('PATCH /roles/:id - Actualizar rol', () => {
     it('debe actualizar role exitosamente (200)', async () => {
       const current = { ...mockRoles.custom };
-      const updated = { ...mockRoles.custom, permissions: ['607f1f77bcf86cd799439041'] };
+      const updated = {
+        ...mockRoles.custom,
+        permissions: ['607f1f77bcf86cd799439041'],
+      };
 
       mockRoleModel.findById.mockImplementationOnce(() => chainable(current));
       mockPermissionModel.countDocuments.mockResolvedValueOnce(1);
-      mockRoleModel.findByIdAndUpdate.mockImplementationOnce(() => chainable(updated));
+      mockRoleModel.findByIdAndUpdate.mockImplementationOnce(() =>
+        chainable(updated),
+      );
 
       const res = await request(app.getHttpServer())
         .patch(`/roles/${mockRoles.custom._id}`)
@@ -277,8 +302,12 @@ describe('Roles E2E', () => {
 
   describe('DELETE /roles/:id - Eliminar rol', () => {
     it('debe eliminar un rol no protegido (200)', async () => {
-      mockRoleModel.findById.mockImplementationOnce(() => chainable(mockRoles.custom));
-      mockRoleModel.findByIdAndDelete.mockImplementationOnce(() => chainable(mockRoles.custom));
+      mockRoleModel.findById.mockImplementationOnce(() =>
+        chainable(mockRoles.custom),
+      );
+      mockRoleModel.findByIdAndDelete.mockImplementationOnce(() =>
+        chainable(mockRoles.custom),
+      );
 
       await request(app.getHttpServer())
         .delete(`/roles/${mockRoles.custom._id}`)
@@ -287,7 +316,9 @@ describe('Roles E2E', () => {
     });
 
     it('debe impedir eliminar rol protegido (400)', async () => {
-      mockRoleModel.findById.mockImplementationOnce(() => chainable(mockRoles.estudiante));
+      mockRoleModel.findById.mockImplementationOnce(() =>
+        chainable(mockRoles.estudiante),
+      );
 
       const res = await request(app.getHttpServer())
         .delete(`/roles/${mockRoles.estudiante._id}`)

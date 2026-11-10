@@ -155,7 +155,7 @@ export class MaterialsController {
   }
 
   @Patch(':id/publish')
-  @Roles('administrador','docente')
+  @Roles('administrador', 'docente')
   @ApiOperation({
     summary: 'Publicar un material para que sea visible por estudiantes',
   })
@@ -230,7 +230,6 @@ export class MaterialsController {
       },
     },
   })
-
   @UseInterceptors(
     FilesInterceptor('files', 10, {
       limits: { fileSize: 550 * 1024 * 1024 },
@@ -256,7 +255,12 @@ export class MaterialsController {
     @CurrentUser() user: any,
   ): Promise<UploadMaterialResponseDto[]> {
     const uploaderId = user?._id?.toString() || user?.id;
-    const stored = await this.uploadService.upload(courseId, uploaderId, files, body);
+    const stored = await this.uploadService.upload(
+      courseId,
+      uploaderId,
+      files,
+      body,
+    );
     return stored.map((m) => ({
       id: m.id,
       courseId: m.courseId,
@@ -273,7 +277,9 @@ export class MaterialsController {
   // ================= Acceso y descarga de materiales de curso =================
   @Get('courses/materials/:id/access')
   @Roles('administrador', 'docente', 'estudiante')
-  @ApiOperation({ summary: 'Obtener el enlace de acceso por ID de material de curso' })
+  @ApiOperation({
+    summary: 'Obtener el enlace de acceso por ID de material de curso',
+  })
   async getAccessUrlById(@Param('id') id: string) {
     const { accessUrl } = await this.uploadService.getAccessUrlById(id);
     return { id, accessUrl };
@@ -284,7 +290,8 @@ export class MaterialsController {
   @ApiOperation({ summary: 'Obtener el enlace de acceso por título' })
   @ApiQuery({ name: 'title', required: true })
   async getAccessUrlByTitle(@Query('title') title: string) {
-    const { accessUrl, material } = await this.uploadService.getAccessUrlByTitle(title);
+    const { accessUrl, material } =
+      await this.uploadService.getAccessUrlByTitle(title);
     const dto: MaterialListItemDto = {
       courseId: String((material as any).courseId),
       uploaderId: String((material as any).uploaderId),
@@ -300,7 +307,9 @@ export class MaterialsController {
 
   @Get('courses/:courseId/materials')
   @Roles('administrador', 'docente', 'estudiante')
-  @ApiOperation({ summary: 'Obtener todos los materiales del curso por courseId' })
+  @ApiOperation({
+    summary: 'Obtener todos los materiales del curso por courseId',
+  })
   @ApiParam({ name: 'courseId', required: true, description: 'ID del curso' })
   async listMaterialsByCourse(@Param('courseId') courseId: string) {
     return this.uploadService.listByCourse(courseId);
@@ -308,8 +317,15 @@ export class MaterialsController {
 
   @Get('courses/materials/:id/download')
   @Roles('administrador', 'docente', 'estudiante')
-  @ApiOperation({ summary: 'Redirige a la descarga/visualización del material de curso por ID' })
-  @ApiResponse({ status: 200, description: 'Descarga del archivo', content: { 'application/octet-stream': {} } })
+  @ApiOperation({
+    summary:
+      'Redirige a la descarga/visualización del material de curso por ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Descarga del archivo',
+    content: { 'application/octet-stream': {} },
+  })
   async downloadById(@Param('id') id: string, @Res() res: Response) {
     await this.uploadService.streamById(id, res);
   }
@@ -333,7 +349,8 @@ export class MaterialsController {
   })
   @ApiResponse({
     status: 400,
-    description: 'El usuario no tiene el rol de estudiante o solo puede consultar sus propios materiales.',
+    description:
+      'El usuario no tiene el rol de estudiante o solo puede consultar sus propios materiales.',
   })
   @ApiResponse({
     status: 403,
@@ -343,10 +360,7 @@ export class MaterialsController {
     status: 404,
     description: 'Estudiante no encontrado.',
   })
-  getStudentCourseMaterials(
-    @Param('id') id: string,
-    @CurrentUser() user: any,
-  ) {
+  getStudentCourseMaterials(@Param('id') id: string, @CurrentUser() user: any) {
     return this.materialsService.getStudentCourseMaterials(id, user.id);
   }
 }

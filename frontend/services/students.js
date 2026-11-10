@@ -12,16 +12,19 @@ export async function getAllStudents() {
     });
     if (!res.ok) return [];
     return await res.json();
-  } catch (err) {
+  } catch {
     return [];
   }
 }
 export async function getAllTeachers() {
   try {
-    const res = await fetch(`${API_URL}/users?role=profesor`);
+    const token = localStorage.getItem('access_token');
+    const res = await fetch(`${API_URL}/users?role=docente`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     if (!res.ok) return [];
     return await res.json();
-  } catch (err) {
+  } catch {
     return [];
   }
 }
@@ -29,7 +32,10 @@ export async function getAllTeachers() {
 // Function to fetch user info by ID
 export async function getUserInfoById(userId) {
   try {
-    const response = await fetch(`/users/${userId}`);
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_URL}/users/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     if (!response.ok) {
       throw new Error(`Error fetching user info: ${response.statusText}`);
     }

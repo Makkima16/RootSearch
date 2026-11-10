@@ -15,7 +15,9 @@ export interface CreateTestAppOptions {
 }
 
 // Utilidad: crea la app Nest para E2E con overrides y pipes comunes
-export async function createTestApp(options: CreateTestAppOptions = {}): Promise<{
+export async function createTestApp(
+  options: CreateTestAppOptions = {},
+): Promise<{
   app: INestApplication;
   module: TestingModule;
 }> {

@@ -15,7 +15,10 @@ import { User, UserSchema } from '../auth/schemas/user.schema';
 import { TranscriptionModule } from '../transcription/transcription.module';
 import { ContentGenerationModule } from '../content-generation/content-generation.module';
 import { PdfExporterService } from './services/pdf-exporter.service';
-import { CourseMaterial, CourseMaterialSchema } from './schemas/course-material.schema';
+import {
+  CourseMaterial,
+  CourseMaterialSchema,
+} from './schemas/course-material.schema';
 import { MaterialUploadService } from './services/material-upload.service';
 import { PdfUploadStrategy } from './strategies/pdf-upload.strategy';
 import { PptxUploadStrategy } from './strategies/pptx-upload.strategy';

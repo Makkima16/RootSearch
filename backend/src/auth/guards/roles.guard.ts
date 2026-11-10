@@ -24,9 +24,11 @@ export class RolesGuard implements CanActivate {
 
     // Comparación insensible a mayúsculas/minúsculas
     return requiredRoles.some((role) =>
-      user.roles?.some((userRole: string) =>
-        typeof userRole === 'string' && userRole.toLowerCase() === role.toLowerCase()
-      )
+      user.roles?.some(
+        (userRole: string) =>
+          typeof userRole === 'string' &&
+          userRole.toLowerCase() === role.toLowerCase(),
+      ),
     );
   }
 }

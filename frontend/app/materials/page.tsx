@@ -64,7 +64,7 @@ export default function MaterialsPage() {
     }
   }, [selectedCourse]);
 
-  const fetchMaterials = async (courseId: string) => {
+  async function fetchMaterials(courseId: string) {
     setLoading(true);
     try {
       const data = await getMaterialsByCourse(courseId);
@@ -75,7 +75,7 @@ export default function MaterialsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const handleUploadAudio = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;

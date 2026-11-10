@@ -1,16 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import {
-  IContentGenerator,
-} from './content-generation.interface';
+import { IContentGenerator } from './content-generation.interface';
 
 @Injectable()
 export class OpenAiAdapter implements IContentGenerator {
   private readonly logger = new Logger(OpenAiAdapter.name);
   private readonly apiUrl = 'https://api.openai.com/v1/chat/completions';
 
-  constructor(private readonly httpService: HttpService) { }
+  constructor(private readonly httpService: HttpService) {}
 
   async generarResumen(
     transcripcion: string,
@@ -91,33 +89,36 @@ export class OpenAiAdapter implements IContentGenerator {
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-        throw new Error('OPENAI_API_KEY no está configurada en el archivo .env');
+      throw new Error('OPENAI_API_KEY no está configurada en el archivo .env');
     }
 
     try {
-        const { data } = await firstValueFrom(
+      const { data } = (await firstValueFrom(
         this.httpService.post(
-            this.apiUrl,
-            {
+          this.apiUrl,
+          {
             model: 'gpt-4o-mini', // Modelo rápido y económico
             messages: [
-                { role: 'system', content: finalSystemPrompt },
-                { role: 'user', content: userContent },
+              { role: 'system', content: finalSystemPrompt },
+              { role: 'user', content: userContent },
             ],
             temperature: temp,
-            },
-            {
+          },
+          {
             headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
             },
-            },
+          },
         ),
-        ) as any;
-        return data.choices[0].message.content;
+      )) as any;
+      return data.choices[0].message.content;
     } catch (error) {
-        this.logger.error('Error llamando a OpenAI', error.response?.data || error.message);
-        throw error;
+      this.logger.error(
+        'Error llamando a OpenAI',
+        error.response?.data || error.message,
+      );
+      throw error;
     }
   }
 

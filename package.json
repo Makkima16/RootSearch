@@ -2,25 +2,31 @@
   "name": "rootsearch-monorepo",
   "version": "1.0.0",
   "private": true,
+  "description": "Plataforma educativa RootSearch: monorepo con backend NestJS y frontend Next.js",
   "workspaces": [
     "backend",
     "frontend"
   ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
-    "dev": "npm run dev --workspaces",
-    "build": "npm run build --workspaces",
-    "start": "npm run start --workspaces",
-    "lint": "npm run lint --workspaces",
-    "test": "npm run test --workspaces",
-    "format": "npm run format --workspaces"
+    "dev": "concurrently -n backend,frontend -c blue,magenta \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:backend": "npm run dev --workspace backend",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "build": "npm run build --workspaces --if-present",
+    "start": "concurrently -n backend,frontend -c blue,magenta \"npm:start:backend\" \"npm:start:frontend\"",
+    "start:backend": "npm run start:prod --workspace backend",
+    "start:frontend": "npm run start --workspace frontend",
+    "lint": "npm run lint --workspaces --if-present",
+    "lint:fix": "npm run lint:fix --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "npm run test:e2e --workspace backend",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "format": "npm run format --workspaces --if-present",
+    "seed": "npm run seed --workspace backend"
   },
   "devDependencies": {
-    "eslint": "^9.18.0",
-    "eslint-config-prettier": "^10.0.1",
-    "eslint-plugin-prettier": "^5.2.2",
-    "prettier": "^3.4.2"
-  },
-  "dependencies": {
-    "react-icons": "^5.5.0"
+    "concurrently": "^9.1.2"
   }
 }

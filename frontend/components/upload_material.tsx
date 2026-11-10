@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { uploadMaterials } from '../services/materials';
-import { FaTimes, FaUpload, FaFilePdf } from 'react-icons/fa';
+import { FaTimes, FaUpload } from 'react-icons/fa';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 interface UploadMaterialModalProps {

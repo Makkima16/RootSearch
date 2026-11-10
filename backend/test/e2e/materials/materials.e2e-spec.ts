@@ -28,31 +28,60 @@ describe('Materials E2E', () => {
   // Mocks de servicios
   const materialsServiceMock: Partial<Record<keyof MaterialsService, any>> = {
     processAudioForCourse: jest.fn().mockResolvedValue({ id: ids.material }),
-    generarSoloResumen: jest.fn().mockResolvedValue({ id: ids.material, resumen: 'Texto' }),
-    generarSoloQuiz: jest.fn().mockResolvedValue({ id: ids.material, quiz: [] }),
-    generarTodoSecuencial: jest.fn().mockResolvedValue({ id: ids.material, resumen: 'R', quiz: [] }),
-    findByCourse: jest.fn().mockResolvedValue([{ _id: ids.material, title: 'Mat 1' }]),
+    generarSoloResumen: jest
+      .fn()
+      .mockResolvedValue({ id: ids.material, resumen: 'Texto' }),
+    generarSoloQuiz: jest
+      .fn()
+      .mockResolvedValue({ id: ids.material, quiz: [] }),
+    generarTodoSecuencial: jest
+      .fn()
+      .mockResolvedValue({ id: ids.material, resumen: 'R', quiz: [] }),
+    findByCourse: jest
+      .fn()
+      .mockResolvedValue([{ _id: ids.material, title: 'Mat 1' }]),
     findAll: jest.fn().mockResolvedValue([{ _id: ids.material }]),
-    findOne: jest.fn().mockResolvedValue({ _id: ids.material, title: 'Mat', content: '...' }),
-    publish: jest.fn().mockResolvedValue({ _id: ids.material, status: 'published' }),
+    findOne: jest
+      .fn()
+      .mockResolvedValue({ _id: ids.material, title: 'Mat', content: '...' }),
+    publish: jest
+      .fn()
+      .mockResolvedValue({ _id: ids.material, status: 'published' }),
     update: jest.fn().mockResolvedValue({ _id: ids.material, title: 'Nuevo' }),
     remove: jest.fn().mockResolvedValue(undefined),
-    getStudentCourseMaterials: jest.fn().mockResolvedValue([{
-      courseId: ids.course,
-      courseName: 'Curso X',
-      materialId: ids.material,
-      title: 'Mat 1',
-      type: 'PDF',
-      accessUrl: 'https://drive.google.com/xyz'
-    }]),
+    getStudentCourseMaterials: jest.fn().mockResolvedValue([
+      {
+        courseId: ids.course,
+        courseName: 'Curso X',
+        materialId: ids.material,
+        title: 'Mat 1',
+        type: 'PDF',
+        accessUrl: 'https://drive.google.com/xyz',
+      },
+    ]),
   } as any;
 
   const uploadServiceMock: Partial<Record<keyof MaterialUploadService, any>> = {
     upload: jest.fn().mockResolvedValue([
-      { id: 'mat-1', courseId: ids.course, type: 'PDF', title: 'File1', description: 'Desc', mime: 'application/pdf', size: 123, status: 'stored', storageRef: 'https://drive/file1' },
+      {
+        id: 'mat-1',
+        courseId: ids.course,
+        type: 'PDF',
+        title: 'File1',
+        description: 'Desc',
+        mime: 'application/pdf',
+        size: 123,
+        status: 'stored',
+        storageRef: 'https://drive/file1',
+      },
     ]),
-    getAccessUrlById: jest.fn().mockResolvedValue({ accessUrl: 'https://drive/file1' }),
-    getAccessUrlByTitle: jest.fn().mockResolvedValue({ accessUrl: 'https://drive/file1', material: { _id: 'mat-1', title: 'File1' } }),
+    getAccessUrlById: jest
+      .fn()
+      .mockResolvedValue({ accessUrl: 'https://drive/file1' }),
+    getAccessUrlByTitle: jest.fn().mockResolvedValue({
+      accessUrl: 'https://drive/file1',
+      material: { _id: 'mat-1', title: 'File1' },
+    }),
     streamById: jest.fn().mockImplementation(async (_id: string, res: any) => {
       res.set({ 'Content-Type': 'application/octet-stream' });
       res.end('file-bytes');
@@ -74,17 +103,38 @@ describe('Materials E2E', () => {
     }));
 
     jwtService = moduleRef.get<JwtService>(JwtService);
-    adminToken = jwtService.sign({ sub: ids.admin, email: 'admin@test.com', roles: ['administrador'], permissions: [] });
-    docenteToken = jwtService.sign({ sub: ids.docente, email: 'docente@test.com', roles: ['docente'], permissions: [] });
-    estudianteToken = jwtService.sign({ sub: ids.estudiante, email: 'estudiante@test.com', roles: ['estudiante'], permissions: [] });
+    adminToken = jwtService.sign({
+      sub: ids.admin,
+      email: 'admin@test.com',
+      roles: ['administrador'],
+      permissions: [],
+    });
+    docenteToken = jwtService.sign({
+      sub: ids.docente,
+      email: 'docente@test.com',
+      roles: ['docente'],
+      permissions: [],
+    });
+    estudianteToken = jwtService.sign({
+      sub: ids.estudiante,
+      email: 'estudiante@test.com',
+      roles: ['estudiante'],
+      permissions: [],
+    });
   });
 
-  afterAll(async () => { await app.close(); });
-  afterEach(() => { jest.clearAllMocks(); });
+  afterAll(async () => {
+    await app.close();
+  });
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   describe('GET /materials/course/:courseId', () => {
     it('401 sin auth', async () => {
-      await request(app.getHttpServer()).get(`/materials/course/${ids.course}`).expect(401);
+      await request(app.getHttpServer())
+        .get(`/materials/course/${ids.course}`)
+        .expect(401);
     });
     it('200 estudiante', async () => {
       const res = await request(app.getHttpServer())
@@ -179,7 +229,10 @@ describe('Materials E2E', () => {
         .set('Authorization', `Bearer ${docenteToken}`)
         .field('title', 'Tema 1')
         .field('description', 'Desc')
-        .attach('files', Buffer.from('PDF'), { filename: 'file1.pdf', contentType: 'application/pdf' })
+        .attach('files', Buffer.from('PDF'), {
+          filename: 'file1.pdf',
+          contentType: 'application/pdf',
+        })
         .expect(201);
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body[0]).toHaveProperty('accessUrl');

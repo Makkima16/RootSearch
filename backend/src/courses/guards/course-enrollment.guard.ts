@@ -11,13 +11,13 @@ import { Course, CourseDocument } from '../schemas/course.schema';
 
 /**
  * Guard que verifica que el usuario esté inscrito en el curso
- * 
+ *
  * Uso:
  * @UseGuards(JwtAuthGuard, CourseEnrollmentGuard)
  * @Get('courses/:courseId/content')
  * @Get('courses/:courseId/materials')
  * async getCourseMaterials(@Param('courseId') courseId: string) { ... }
- * 
+ *
  * Solo estudiantes inscritos, el instructor, y administradores pueden acceder
  */
 @Injectable()

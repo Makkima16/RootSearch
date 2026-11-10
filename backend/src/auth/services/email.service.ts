@@ -208,7 +208,7 @@ export class EmailService {
       this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
     const resetLink = `${frontend}/reset-password?token=${resetToken}`;
 
-    const logoUrl = 'http://localhost:3000/assets/logo.png'; // Ajusta si usas otro puerto o ruta
+    const logoUrl = `${frontend}/assets/logo.png`;
 
     const mailOptions = {
       from: `"RootSearch" <${this.configService.get<string>('EMAIL_USER')}>`,

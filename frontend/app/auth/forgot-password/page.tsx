@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { LuMail } from "react-icons/lu";
 import { forgotPassword } from "../../../services/users";
 import Toast from "../../../components/Toast";
+import Logo from "../../../components/Logo";
+import { AuthField, AuthShell, AuthSubmit } from "../../../components/AuthUI";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -29,7 +32,7 @@ export default function ForgotPasswordPage() {
           type: "success",
         });
       }
-    } catch (err) {
+    } catch {
       setToast({
         show: true,
         message: "Error al solicitar la recuperación",
@@ -41,50 +44,31 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050214] font-sans">
-      <div className="w-full max-w-md bg-[#181828] p-8 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-semibold text-white mb-2">
-          Recuperar contraseña
-        </h2>
-        <p className="text-zinc-300 mb-6 text-sm">
-          Ingresa tu correo y te enviaremos un enlace para restablecer tu
-          contraseña.
-        </p>
+    <AuthShell>
+      <Logo size={56} variant="principal" className="mb-6" />
+      <h2 className="mb-2 text-3xl font-semibold text-white">Recuperar contraseña</h2>
+      <p className="mb-6 text-sm text-rs-150">
+        Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
+      </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-zinc-300 mb-1">
-              Email
-            </label>
-            <div className="flex items-center border-b border-zinc-400 py-2">
-              <span className="mr-2 text-zinc-400">📧</span>
-              <input
-                type="email"
-                id="email"
-                required
-                className="bg-transparent outline-none text-white w-full"
-                placeholder="tu@correo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <AuthField
+          id="email"
+          label="Email"
+          icon={LuMail}
+          type="email"
+          placeholder="tu@correo.com"
+          value={email}
+          onChange={setEmail}
+        />
+        <AuthSubmit loading={loading} label="Enviar enlace" loadingLabel="Enviando..." />
+      </form>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 mt-4 rounded-full bg-[#5C54E7] text-white font-semibold text-lg transition duration-200 cursor-pointer disabled:opacity-60"
-          >
-            {loading ? "Enviando..." : "Enviar enlace"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-zinc-300 text-sm">
-          <Link href="/auth/login" className="text-[#6356E5] font-semibold">
-            Volver al inicio de sesión
-          </Link>
-        </p>
-      </div>
+      <p className="mt-6 text-center text-sm text-rs-150">
+        <Link href="/auth/login" className="font-semibold text-rs-lime hover:text-[#dceba0]">
+          Volver al inicio de sesión
+        </Link>
+      </p>
 
       {toast.show && (
         <Toast
@@ -93,6 +77,6 @@ export default function ForgotPasswordPage() {
           onClose={() => setToast({ ...toast, show: false })}
         />
       )}
-    </div>
+    </AuthShell>
   );
 }

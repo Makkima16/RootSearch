@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { FaTimes, FaUserPlus } from 'react-icons/fa';
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { LuLoaderCircle, LuUserPlus, LuX } from 'react-icons/lu';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -187,31 +186,31 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
       {/* Overlay */}
       <div 
-        className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"
+        className="absolute inset-0 bg-rs-950/60 backdrop-blur-sm"
         onClick={handleClose}
       />
       
       {/* Modal */}
-      <div className="relative bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 animate-slideUp">
+      <div className="relative bg-rs-surface border border-rs-line rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 animate-slideUp">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-            <FaUserPlus className="text-[#6356E5]" />
+          <h2 className="text-2xl sm:text-3xl font-bold text-rs-ink flex items-center gap-3">
+            <LuUserPlus className="text-rs-700" />
             Crear Usuario
           </h2>
           <button
             onClick={handleClose}
             disabled={loading}
-            className="text-gray-400 hover:text-white transition-colors duration-200 disabled:opacity-50 cursor-pointer"
+            className="text-rs-muted hover:text-rs-900 transition-colors duration-200 disabled:opacity-50 cursor-pointer"
             aria-label="Cerrar modal"
           >
-            <FaTimes className="text-2xl" />
+            <LuX className="text-2xl" />
           </button>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400 text-sm">
+          <div className="mb-4 p-3 bg-rs-error-bg border border-rs-error/30 rounded-lg text-rs-error text-sm">
             {error}
           </div>
         )}
@@ -221,8 +220,8 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Name Field */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
-                Nombre Completo <span className="text-red-400">*</span>
+              <label htmlFor="name" className="block text-sm font-medium text-rs-ink mb-2">
+                Nombre Completo <span className="text-rs-error">*</span>
               </label>
               <input
                 type="text"
@@ -232,15 +231,15 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
                 onChange={handleChange}
                 required
                 disabled={loading}
-                className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Ej: Juan Pérez"
               />
             </div>
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Correo Electrónico <span className="text-red-400">*</span>
+              <label htmlFor="email" className="block text-sm font-medium text-rs-ink mb-2">
+                Correo Electrónico <span className="text-rs-error">*</span>
               </label>
               <input
                 type="email"
@@ -250,15 +249,15 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
                 onChange={handleChange}
                 required
                 disabled={loading}
-                className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="usuario@ejemplo.com"
               />
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Contraseña <span className="text-red-400">*</span>
+              <label htmlFor="password" className="block text-sm font-medium text-rs-ink mb-2">
+                Contraseña <span className="text-rs-error">*</span>
               </label>
               <input
                 type="password"
@@ -269,19 +268,19 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
                 required
                 disabled={loading}
                 minLength={6}
-                className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Mínimo 6 caracteres"
               />
             </div>
 
             {/* Role Field */}
             <div>
-              <label htmlFor="roleId" className="block text-sm font-medium text-gray-300 mb-2">
-                Rol <span className="text-red-400">*</span>
+              <label htmlFor="roleId" className="block text-sm font-medium text-rs-ink mb-2">
+                Rol <span className="text-rs-error">*</span>
               </label>
               {loadingRoles ? (
-                <div className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white/60 flex items-center gap-2">
-                  <AiOutlineLoading3Quarters className="animate-spin" />
+                <div className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-muted flex items-center gap-2">
+                  <LuLoaderCircle className="animate-spin" />
                   Cargando roles...
                 </div>
               ) : (
@@ -292,7 +291,7 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <option value="">Selecciona un rol</option>
                   {roles.map((role) => (
@@ -306,8 +305,8 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
 
             {/* Phone Field */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
-                Teléfono <span className="text-gray-500">(opcional)</span>
+              <label htmlFor="phone" className="block text-sm font-medium text-rs-ink mb-2">
+                Teléfono <span className="text-rs-muted">(opcional)</span>
               </label>
               <input
                 type="tel"
@@ -316,15 +315,15 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
                 value={formData.phone}
                 onChange={handleChange}
                 disabled={loading}
-                className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="+57 300 123 4567"
               />
             </div>
 
             {/* Birth Date Field */}
             <div>
-              <label htmlFor="birthDate" className="block text-sm font-medium text-gray-300 mb-2">
-                Fecha de Nacimiento <span className="text-gray-500">(opcional)</span>
+              <label htmlFor="birthDate" className="block text-sm font-medium text-rs-ink mb-2">
+                Fecha de Nacimiento <span className="text-rs-muted">(opcional)</span>
               </label>
               <input
                 type="date"
@@ -333,15 +332,15 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
                 value={formData.birthDate}
                 onChange={handleChange}
                 disabled={loading}
-                className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </div>
 
           {/* Address Field */}
           <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-300 mb-2">
-              Dirección <span className="text-gray-500">(opcional)</span>
+            <label htmlFor="address" className="block text-sm font-medium text-rs-ink mb-2">
+              Dirección <span className="text-rs-muted">(opcional)</span>
             </label>
             <input
               type="text"
@@ -350,7 +349,7 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
               value={formData.address}
               onChange={handleChange}
               disabled={loading}
-              className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="Calle 123 # 45-67"
             />
           </div>
@@ -361,18 +360,18 @@ export default function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUs
               type="button"
               onClick={handleClose}
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-3 bg-rs-100 hover:bg-rs-200 text-rs-ink font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading || !formData.name.trim() || !formData.email.trim() || !formData.password.trim() || !formData.roleId || loadingRoles}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-[#6356E5] to-[#4f48c7] hover:from-[#4f48c7] hover:to-[#6356E5] text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 bg-rs-700 hover:bg-rs-800 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
-                  <AiOutlineLoading3Quarters className="animate-spin text-lg" />
+                  <LuLoaderCircle className="animate-spin text-lg" />
                   Creando...
                 </>
               ) : (

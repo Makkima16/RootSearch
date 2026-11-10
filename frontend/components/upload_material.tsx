@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { uploadMaterials } from '../services/materials';
-import { FaTimes, FaUpload } from 'react-icons/fa';
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { LuFileSpreadsheet, LuFileText, LuFileType, LuLoaderCircle, LuPaperclip, LuPresentation, LuUpload, LuX } from 'react-icons/lu';
 
 interface UploadMaterialModalProps {
   isOpen: boolean;
@@ -82,20 +81,21 @@ export default function UploadMaterialModal({ isOpen, onClose, onSuccess, course
 
   const getFileIcon = (fileName: string) => {
     const extension = fileName.split('.').pop()?.toLowerCase();
+    const cls = 'size-6 text-rs-700';
     switch (extension) {
       case 'pdf':
-        return '📄';
+        return <LuFileText className={cls} aria-hidden="true" />;
       case 'doc':
       case 'docx':
-        return '📝';
+        return <LuFileType className={cls} aria-hidden="true" />;
       case 'ppt':
       case 'pptx':
-        return '📊';
+        return <LuPresentation className={cls} aria-hidden="true" />;
       case 'xls':
       case 'xlsx':
-        return '📈';
+        return <LuFileSpreadsheet className={cls} aria-hidden="true" />;
       default:
-        return '📎';
+        return <LuPaperclip className={cls} aria-hidden="true" />;
     }
   };
 
@@ -105,31 +105,31 @@ export default function UploadMaterialModal({ isOpen, onClose, onSuccess, course
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
       {/* Overlay */}
       <div 
-        className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"
+        className="absolute inset-0 bg-rs-950/60 backdrop-blur-sm"
         onClick={handleClose}
       />
       
       {/* Modal */}
-      <div className="relative bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 sm:p-8 animate-slideUp">
+      <div className="relative bg-rs-surface border border-rs-line rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 sm:p-8 animate-slideUp">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-            <FaUpload className="text-[#6356E5]" />
+          <h2 className="text-2xl sm:text-3xl font-bold text-rs-ink flex items-center gap-3">
+            <LuUpload className="text-rs-700" />
             Subir Material
           </h2>
           <button
             onClick={handleClose}
             disabled={loading}
-            className="text-gray-400 hover:text-white transition-colors duration-200 disabled:opacity-50 cursor-pointer"
+            className="text-rs-muted hover:text-rs-900 transition-colors duration-200 disabled:opacity-50 cursor-pointer"
             aria-label="Cerrar modal"
           >
-            <FaTimes className="text-2xl" />
+            <LuX className="text-2xl" />
           </button>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400 text-sm">
+          <div className="mb-4 p-3 bg-rs-error-bg border border-rs-error/30 rounded-lg text-rs-error text-sm">
             {error}
           </div>
         )}
@@ -138,8 +138,8 @@ export default function UploadMaterialModal({ isOpen, onClose, onSuccess, course
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Title Field */}
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">
-              Título del Material <span className="text-red-400">*</span>
+            <label htmlFor="title" className="block text-sm font-medium text-rs-ink mb-2">
+              Título del Material <span className="text-rs-error">*</span>
             </label>
             <input
               type="text"
@@ -149,15 +149,15 @@ export default function UploadMaterialModal({ isOpen, onClose, onSuccess, course
               onChange={handleChange}
               required
               disabled={loading}
-              className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="Ej: Clase 1 - Introducción"
             />
           </div>
 
           {/* Description Field */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
-              Descripción <span className="text-gray-500">(opcional)</span>
+            <label htmlFor="description" className="block text-sm font-medium text-rs-ink mb-2">
+              Descripción <span className="text-rs-muted">(opcional)</span>
             </label>
             <textarea
               id="description"
@@ -166,15 +166,15 @@ export default function UploadMaterialModal({ isOpen, onClose, onSuccess, course
               onChange={handleChange}
               disabled={loading}
               rows={3}
-              className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink placeholder-rs-muted/70 focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="Describe brevemente el contenido del material..."
             />
           </div>
 
           {/* File Upload Field */}
           <div>
-            <label htmlFor="files" className="block text-sm font-medium text-gray-300 mb-2">
-              Archivos <span className="text-red-400">*</span>
+            <label htmlFor="files" className="block text-sm font-medium text-rs-ink mb-2">
+              Archivos <span className="text-rs-error">*</span>
             </label>
             <div className="relative">
               <input
@@ -184,10 +184,10 @@ export default function UploadMaterialModal({ isOpen, onClose, onSuccess, course
                 disabled={loading}
                 multiple
                 accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
-                className="w-full px-4 py-3 bg-[#0f0f1e] border border-gray-700 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#6356E5] file:text-white hover:file:bg-[#4f48c7] file:cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#6356E5] focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 bg-white border border-rs-input rounded-lg text-rs-ink file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-rs-700 file:text-white hover:file:bg-rs-800 file:cursor-pointer focus:outline-none focus:ring-2 focus:ring-rs-700 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
-            <p className="mt-2 text-xs text-gray-400">
+            <p className="mt-2 text-xs text-rs-muted">
               Formatos aceptados: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX
             </p>
           </div>
@@ -195,20 +195,20 @@ export default function UploadMaterialModal({ isOpen, onClose, onSuccess, course
           {/* Selected Files List */}
           {files.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-300">
+              <p className="text-sm font-medium text-rs-ink">
                 Archivos seleccionados ({files.length})
               </p>
               <div className="max-h-40 overflow-y-auto space-y-2">
                 {files.map((file, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between bg-[#0f0f1e] border border-gray-700 rounded-lg p-3 group hover:border-[#6356E5] transition-all duration-200"
+                    className="flex items-center justify-between bg-white border border-rs-input rounded-lg p-3 group hover:border-rs-600 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-2xl">{getFileIcon(file.name)}</span>
+                      <span className="shrink-0">{getFileIcon(file.name)}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white text-sm truncate">{file.name}</p>
-                        <p className="text-gray-400 text-xs">
+                        <p className="text-rs-ink text-sm truncate">{file.name}</p>
+                        <p className="text-rs-muted text-xs">
                           {(file.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                       </div>
@@ -217,10 +217,10 @@ export default function UploadMaterialModal({ isOpen, onClose, onSuccess, course
                       type="button"
                       onClick={() => handleRemoveFile(index)}
                       disabled={loading}
-                      className="ml-2 text-red-400 hover:text-red-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="ml-2 text-rs-error hover:text-[#7f1e10] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Eliminar archivo"
                     >
-                      <FaTimes className="text-lg" />
+                      <LuX className="text-lg" />
                     </button>
                   </div>
                 ))}
@@ -234,23 +234,23 @@ export default function UploadMaterialModal({ isOpen, onClose, onSuccess, course
               type="button"
               onClick={handleClose}
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="flex-1 px-4 py-3 bg-rs-100 hover:bg-rs-200 text-rs-ink font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading || !formData.title.trim() || files.length === 0}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-[#6356E5] to-[#4f48c7] hover:from-[#4f48c7] hover:to-[#6356E5] text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 px-4 py-3 bg-rs-700 hover:bg-rs-800 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
             >
               {loading ? (
                 <>
-                  <AiOutlineLoading3Quarters className="animate-spin text-lg" />
+                  <LuLoaderCircle className="animate-spin text-lg" />
                   Subiendo...
                 </>
               ) : (
                 <>
-                  <FaUpload />
+                  <LuUpload />
                   Subir Material
                 </>
               )}

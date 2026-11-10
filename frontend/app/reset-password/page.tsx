@@ -3,8 +3,11 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { LuLock } from "react-icons/lu";
 import { resetPassword } from "../../services/users";
 import Toast from "../../components/Toast";
+import Logo from "../../components/Logo";
+import { AuthField, AuthShell, AuthSubmit } from "../../components/AuthUI";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -60,7 +63,7 @@ function ResetPasswordForm() {
         });
         setTimeout(() => router.push("/auth/login"), 1000);
       }
-    } catch (err) {
+    } catch {
       setToast({
         show: true,
         message: "Error al restablecer la contraseña",
@@ -72,64 +75,38 @@ function ResetPasswordForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050214] font-sans">
-      <div className="w-full max-w-md bg-[#181828] p-8 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-semibold text-white mb-2">
-          Nueva contraseña
-        </h2>
-        <p className="text-zinc-300 mb-6 text-sm">
-          Define una nueva contraseña para tu cuenta.
-        </p>
+    <AuthShell>
+      <Logo size={56} variant="principal" className="mb-6" />
+      <h2 className="mb-2 text-3xl font-semibold text-white">Nueva contraseña</h2>
+      <p className="mb-6 text-sm text-rs-150">Define una nueva contraseña para tu cuenta.</p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="newPassword" className="block text-zinc-300 mb-1">
-              Nueva contraseña
-            </label>
-            <input
-              type="password"
-              id="newPassword"
-              required
-              minLength={6}
-              className="w-full bg-transparent border-b border-zinc-400 py-2 text-white outline-none"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <AuthField
+          id="newPassword"
+          label="Nueva contraseña"
+          icon={LuLock}
+          minLength={6}
+          value={newPassword}
+          onChange={setNewPassword}
+          togglePassword
+        />
+        <AuthField
+          id="confirmPassword"
+          label="Confirmar contraseña"
+          icon={LuLock}
+          minLength={6}
+          value={confirmPassword}
+          onChange={setConfirmPassword}
+          togglePassword
+        />
+        <AuthSubmit loading={loading} label="Actualizar contraseña" loadingLabel="Guardando..." />
+      </form>
 
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="block text-zinc-300 mb-1"
-            >
-              Confirmar contraseña
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              required
-              minLength={6}
-              className="w-full bg-transparent border-b border-zinc-400 py-2 text-white outline-none"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 mt-4 rounded-full bg-[#5C54E7] text-white font-semibold text-lg transition duration-200 cursor-pointer disabled:opacity-60"
-          >
-            {loading ? "Guardando..." : "Actualizar contraseña"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-zinc-300 text-sm">
-          <Link href="/auth/login" className="text-[#6356E5] font-semibold">
-            Volver al inicio de sesión
-          </Link>
-        </p>
-      </div>
+      <p className="mt-6 text-center text-sm text-rs-150">
+        <Link href="/auth/login" className="font-semibold text-rs-lime hover:text-[#dceba0]">
+          Volver al inicio de sesión
+        </Link>
+      </p>
 
       {toast.show && (
         <Toast
@@ -138,7 +115,7 @@ function ResetPasswordForm() {
           onClose={() => setToast({ ...toast, show: false })}
         />
       )}
-    </div>
+    </AuthShell>
   );
 }
 
@@ -146,9 +123,7 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#050214] text-white">
-          Cargando...
-        </div>
+        <div className="flex min-h-screen items-center justify-center bg-rs-950 text-white">Cargando...</div>
       }
     >
       <ResetPasswordForm />

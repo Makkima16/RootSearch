@@ -20,14 +20,15 @@ export default function Toast({ message, type = "info", onClose }: ToastProps) {
 
   const color =
     type === "error"
-      ? "bg-red-600"
+      ? "bg-rs-error"
       : type === "success"
-      ? "bg-green-600"
-      : "bg-blue-600";
+      ? "bg-rs-700"
+      : "bg-rs-info";
 
   return (
     <div
-      className={`fixed top-6 right-6 z-50 px-6 py-3 rounded-lg text-white shadow-lg ${color} animate-slide-in-right`}
+      role="status"
+      className={`fixed top-6 right-6 z-[60] max-w-[calc(100vw-3rem)] px-6 py-3 rounded-xl text-white font-medium shadow-lg ${color} animate-slide-in-right`}
       style={{ animation: toastClosing ? "slide-out-right 0.5s forwards" : undefined }}
     >
       {message}

@@ -14,7 +14,24 @@ import {
   getTotalStudentsCount,
 } from "@/services/metrics";
 import Toast from "@/components/Toast";
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import {
+  LuBookOpen,
+  LuUsers,
+  LuSparkles,
+  LuArrowRight,
+  LuChevronRight,
+  LuFileText,
+  LuMic,
+  LuSave,
+  LuCheck,
+  LuPencil,
+} from "react-icons/lu";
+import { Modal, StatusChip, StatCard, EmptyState, LoadingScreen, MessageScreen } from "@/components/ui";
+import {
+  GeneratedContentList,
+  GeneratedContentTabs,
+  GeneratedContentBody,
+} from "@/components/GeneratedContent";
 
 type Student = {
   _id: string;
@@ -172,14 +189,7 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
-        <div className="text-center">
-          <AiOutlineLoading3Quarters className="animate-spin text-4xl text-[#6356E5] mx-auto mb-4" />
-          <span className="text-lg">Cargando...</span>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
   const handleGenerateWithAI = async (courseId: string, courseName: string) => {
     const fileInput = document.createElement('input');
@@ -355,687 +365,304 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold mb-2">⚠️ Acceso Denegado</h1>
-          <p className="text-zinc-300">{error}</p>
-          <a
-            href="/"
-            className="mt-4 inline-block bg-[#6356E5] hover:bg-[#4f48c7] text-white px-4 py-2 rounded-lg transition"
-          >
+      <MessageScreen
+        title="Acceso denegado"
+        message={error}
+        action={
+          <a href="/" className="rs-btn-primary">
             Volver al inicio
           </a>
-        </div>
-      </div>
+        }
+      />
     );
   }
 
+  const isStaff = user?.role.toLowerCase() === "docente" || user?.role.toLowerCase() === "administrador";
+  const isAdmin = user?.role.toLowerCase() === "administrador";
+  const firstName = user?.name?.split(" ")[0] ?? "";
+  const today = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+  const bandColors = ["bg-rs-700", "bg-rs-600", "bg-rs-900"];
+
+  const closeContentModal = () => {
+    setShowGeneratedContentModal(false);
+    setSelectedGeneratedContent(null);
+    setIsEditingContent(false);
+    setEditedContent(null);
+  };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-[#040418] text-black">
+    <div className="flex min-h-screen flex-col bg-rs-50 text-rs-ink lg:flex-row">
       <SideBar user={user!} />
 
-      <main className="flex-1 flex flex-col gap-4 p-6">
-        {user?.role.toLowerCase() === "docente"||user?.role.toLowerCase() === "administrador" ? (
-          <>
-            <div className="w-full">
-              {teacherCourses.length > 0 ? (
-                <div className="bg-[#101434] rounded-lg shadow overflow-x-auto">
-                  <table className="w-full text-sm text-white">
-                    <thead>
-                      <tr className="border-b border-[#2a2a4a] bg-[#0f0f2e]">
-                        <th className="px-6 py-4 text-left font-semibold">Nombre del curso</th>
-                        <th className="px-6 py-4 text-left font-semibold">Estudiantes Asignados</th>
-                        <th className="px-6 py-4 text-center font-semibold"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {teacherCourses.slice(0, 5).map((course) => (
-                        <React.Fragment key={course._id}>
-                          <tr className="border-b border-[#2a2a4a] hover:bg-[#151540] transition">
-                            <td className="px-6 py-4 font-medium">{course.name}</td>
-                            <td className="px-6 py-4">
-                              <button
-                                onClick={() => toggleCourseExpansion(course._id)}
-                                className="text-[#6356E5] hover:text-[#7a6eff] font-medium cursor-pointer flex items-center gap-2 transition"
-                              >
-                                <span>{expandedCourses.has(course._id) ? '▼' : '▶'}</span>
-                                <span>
-                                  {Array.isArray(course.students) && course.students.length > 0
-                                    ? `${course.students.length} estudiante${course.students.length > 1 ? 's' : ''}`
-                                    : 'Sin estudiantes'}
-                                </span>
-                              </button>
-                            </td>
-                            <td className="px-6 py-4 text-center">
-                              <div className="flex gap-2 justify-center flex-wrap">
-                                <button
-                                  onClick={() => handleShowPiaa(course._id, course.name)}
-                                  className="bg-[#6356E5] hover:bg-[#4f48c7] text-white px-4 py-2 rounded-lg transition font-medium text-sm cursor-pointer"
-                                >
-                                  Mostrar PIAA
-                                </button>
-                                <button
-                                  onClick={() => handleGenerateWithAI(course._id, course.name)}
-                                  className="bg-[#28a745] hover:bg-[#218838] text-white px-4 py-2 rounded-lg transition font-medium text-sm cursor-pointer"
-                                >
-                                  Generar con IA
-                                </button>
-                                <button
-                                  onClick={() => handleShowGeneratedContent(course._id, course.name)}
-                                  disabled={loadingGeneratedContent}
-                                  className="bg-[#fd7e14] hover:bg-[#e06c00] disabled:bg-[#999] disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition font-medium text-sm cursor-pointer"
-                                >
-                                  {loadingGeneratedContent ? 'Cargando...' : 'Mostrar Contenido Generado'}
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                          {expandedCourses.has(course._id) && Array.isArray(course.students) && course.students.length > 0 && (
-                            <tr className="bg-[#0a0a1f] border-b border-[#2a2a4a]">
-                              <td colSpan={3} className="px-6 py-4">
-                                <div className="space-y-2">
-                                  {course.students.map((student: any) => (
-                                    <div
-                                      key={typeof student === 'string' ? student : student._id}
-                                      className="bg-[#151540] rounded px-4 py-2 text-sm text-white flex items-center justify-between"
-                                    >
-                                      <span>{typeof student === 'string' ? 'ID: ' + student : student.name || 'Estudiante'}</span>
-                                      {typeof student !== 'string' && student.email && (
-                                        <span className="text-white/60 text-xs">{student.email}</span>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              </td>
-                            </tr>
-                          )}
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="bg-[#101434] rounded-lg shadow p-6 text-center text-white/70">
-                  No tienes cursos asignados.
-                </div>
-              )}
-            </div>
+      <main className="flex min-w-0 flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:px-10">
+        <header>
+          <p className="text-sm capitalize text-rs-muted">{today}</p>
+          <h1 className="rs-title mt-1 text-3xl">Hola, {firstName}</h1>
+        </header>
 
-            {/* Métricas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Cantidad de Cursos */}
-              <div className="bg-[#101434] rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white/70 text-sm font-medium mb-1">
-                      Cursos Activos
-                    </p>
-                    <p className="text-4xl font-bold text-[#6356E5]">
-                      {metrics.coursesCount}
-                    </p>
-                  </div>
-                  <div className="bg-[#6356E5] bg-opacity-20 rounded-full p-4">
-                    <img
-                      src="/assets/iconos/cursos.png"
-                      alt="Courses"
-                      className="w-10 h-10"
-                    />
-                  </div>
-                </div>
-                <p className="text-white/60 text-sm mt-3">
-                  {user?.role.toLowerCase() === "administrador"
-                    ? "Total de cursos activos en el sistema"
-                    : "Total de cursos que estás impartiendo"}
-                </p>
-              </div>
-
-              {/* Cantidad de Estudiantes */}
-              <div className="bg-[#101434] rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white/70 text-sm font-medium mb-1">
-                      {user?.role.toLowerCase() === "administrador" ? "Estudiantes Totales" : "Estudiantes Únicos"}
-                    </p>
-                    <p className="text-4xl font-bold text-[#7a6eff]">
-                      {metrics.studentsCount}
-                    </p>
-                  </div>
-                  <div className="bg-[#7a6eff] bg-opacity-20 rounded-full p-4">
-                    <img
-                      src="/assets/iconos/students.png"
-                      alt="Students"
-                      className="w-10 h-10"
-                    />
-                  </div>
-                </div>
-                <p className="text-white/60 text-sm mt-3">
-                  {user?.role.toLowerCase() === "administrador"
+        {/* Métricas */}
+        <section aria-label="Resumen" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {isStaff ? (
+            <>
+              <StatCard
+                tone="deep"
+                icon={LuBookOpen}
+                label="Cursos activos"
+                value={metrics.coursesCount}
+                hint={isAdmin ? "Total de cursos activos en el sistema" : "Total de cursos que estás impartiendo"}
+              />
+              <StatCard
+                tone="mint"
+                icon={LuUsers}
+                label={isAdmin ? "Estudiantes totales" : "Estudiantes únicos"}
+                value={metrics.studentsCount}
+                hint={
+                  isAdmin
                     ? "Total de estudiantes inscritos en el sistema"
-                    : "Estudiantes diferentes a los que impartes clase"}
-                </p>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Vista para estudiantes */}
-            <div className="w-full">
-              <h2 className="text-2xl font-bold text-white mb-4">Mis Cursos</h2>
-              {teacherCourses.length > 0 ? (
-                <div className="bg-[#101434] rounded-lg shadow overflow-x-auto">
-                  <table className="w-full text-sm text-white">
-                    <thead>
-                      <tr className="border-b border-[#2a2a4a] bg-[#0f0f2e]">
-                        <th className="px-6 py-4 text-left font-semibold">Nombre del curso</th>
-                        <th className="px-6 py-4 text-center font-semibold">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {teacherCourses.slice(0, 5).map((course) => (
-                        <tr key={course._id} className="border-b border-[#2a2a4a] hover:bg-[#151540] transition">
-                          <td className="px-6 py-4 font-medium">{course.name}</td>
-                          <td className="px-6 py-4 text-center">
-                            <div className="flex gap-2 justify-center flex-wrap">
-                              <button
-                                onClick={() => handleShowPiaa(course._id, course.name)}
-                                className="bg-[#6356E5] hover:bg-[#4f48c7] text-white px-4 py-2 rounded-lg transition font-medium text-sm cursor-pointer"
-                              >
-                                Mostrar PIAA
-                              </button>
-                              <button
-                                onClick={() => handleShowGeneratedContent(course._id, course.name)}
-                                disabled={loadingGeneratedContent}
-                                className="bg-[#fd7e14] hover:bg-[#e06c00] disabled:bg-[#999] disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition font-medium text-sm cursor-pointer"
-                              >
-                                {loadingGeneratedContent ? 'Cargando...' : 'Mostrar Contenido Generado'}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="bg-[#101434] rounded-lg shadow p-6 text-center text-white/70">
-                  No estás inscrito en ningún curso.
-                </div>
-              )}
-            </div>
+                    : "Estudiantes diferentes a los que impartes clase"
+                }
+              />
+            </>
+          ) : (
+            <>
+              <StatCard
+                tone="deep"
+                icon={LuBookOpen}
+                label="Cursos inscritos"
+                value={metrics.coursesCount}
+                hint="Total de cursos en los que estás matriculado"
+              />
+              <StatCard
+                tone="lime"
+                icon={LuSparkles}
+                label="Materiales disponibles"
+                // Por implementar: conteo de materiales
+                value={0}
+                hint="Materiales de estudio generados en tus cursos"
+              />
+            </>
+          )}
+        </section>
 
-            {/* Métricas para estudiantes */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Cantidad de Cursos Inscritos */}
-              <div className="bg-[#101434] rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white/70 text-sm font-medium mb-1">
-                      Cursos Inscritos
-                    </p>
-                    <p className="text-4xl font-bold text-[#6356E5]">
-                      {metrics.coursesCount}
-                    </p>
-                  </div>
-                  <div className="bg-[#6356E5] bg-opacity-20 rounded-full p-4">
-                    <img
-                      src="/assets/iconos/cursos.png"
-                      alt="Courses"
-                      className="w-10 h-10"
-                    />
-                  </div>
-                </div>
-                <p className="text-white/60 text-sm mt-3">
-                  Total de cursos en los que estás matriculado
-                </p>
-              </div>
+        {/* Cursos */}
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="rs-title text-xl">Mis cursos</h2>
+            <a href="/courses/list" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-rs-700 hover:text-rs-800">
+              Ver todos <LuArrowRight className="size-4" aria-hidden="true" />
+            </a>
+          </div>
 
-              {/* Cantidad de Materiales (placeholder por ahora) */}
-              <div className="bg-[#101434] rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white/70 text-sm font-medium mb-1">
-                      Materiales Disponibles
-                    </p>
-                    <p className="text-4xl font-bold text-[#7a6eff]">
-                      {/* Por implementar: conteo de materiales */}
-                      0
-                    </p>
-                  </div>
-                  <div className="bg-[#7a6eff] bg-opacity-20 rounded-full p-4">
-                    <img
-                      src="/assets/iconos/report.png"
-                      alt="Materials"
-                      className="w-10 h-10"
-                    />
-                  </div>
-                </div>
-                <p className="text-white/60 text-sm mt-3">
-                  Materiales de estudio generados en tus cursos
-                </p>
-              </div>
+          {teacherCourses.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+              {teacherCourses.slice(0, 5).map((course, i) => {
+                const studentCount = Array.isArray(course.students) ? course.students.length : 0;
+                const isExpanded = expandedCourses.has(course._id);
+                return (
+                  <article key={course._id} className="rs-card flex flex-col overflow-hidden">
+                    <div className={`flex h-16 items-start px-5 pt-4 ${bandColors[i % bandColors.length]}`}>
+                      <span className="grid size-10 place-items-center rounded-[10px] bg-rs-lime text-rs-900">
+                        <LuBookOpen className="size-5" aria-hidden="true" />
+                      </span>
+                    </div>
+                    <div className="flex flex-1 flex-col gap-4 p-5">
+                      <div>
+                        <h3 className="text-base font-semibold text-rs-ink">{course.name}</h3>
+                        {course.description && (
+                          <p className="mt-1 line-clamp-2 text-sm text-rs-muted">{course.description}</p>
+                        )}
+                      </div>
+
+                      {isStaff && (
+                        <div className="border-t border-rs-line-soft pt-3">
+                          <button
+                            type="button"
+                            onClick={() => toggleCourseExpansion(course._id)}
+                            aria-expanded={isExpanded}
+                            disabled={studentCount === 0}
+                            className="inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium text-rs-700 hover:text-rs-800 disabled:cursor-default disabled:text-rs-muted"
+                          >
+                            <LuChevronRight
+                              className={`size-4 transition-transform ${isExpanded ? "rotate-90" : ""}`}
+                              aria-hidden="true"
+                            />
+                            {studentCount > 0
+                              ? `${studentCount} estudiante${studentCount > 1 ? "s" : ""}`
+                              : "Sin estudiantes"}
+                          </button>
+                          {isExpanded && studentCount > 0 && (
+                            <ul className="mt-3 space-y-1.5">
+                              {(course.students as (Student | string)[]).map((student) => (
+                                <li
+                                  key={typeof student === "string" ? student : student._id}
+                                  className="flex flex-wrap items-center justify-between gap-x-3 rounded-lg bg-rs-50 px-3 py-2 text-sm"
+                                >
+                                  <span className="text-rs-ink">
+                                    {typeof student === "string" ? "ID: " + student : student.name || "Estudiante"}
+                                  </span>
+                                  {typeof student !== "string" && student.email && (
+                                    <span className="text-xs text-rs-muted">{student.email}</span>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="mt-auto flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleShowPiaa(course._id, course.name)}
+                          className="rs-btn-secondary"
+                        >
+                          <LuFileText className="size-4" aria-hidden="true" /> PIAA
+                        </button>
+                        {isStaff && (
+                          <button
+                            type="button"
+                            onClick={() => handleGenerateWithAI(course._id, course.name)}
+                            className="rs-btn-primary"
+                          >
+                            <LuMic className="size-4" aria-hidden="true" /> Generar con IA
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleShowGeneratedContent(course._id, course.name)}
+                          disabled={loadingGeneratedContent}
+                          className="rs-btn-ghost"
+                        >
+                          <LuSparkles className="size-4" aria-hidden="true" />
+                          {loadingGeneratedContent ? "Cargando..." : "Contenido generado"}
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
-          </>
-        )}
+          ) : (
+            <EmptyState icon={LuBookOpen}>
+              {isStaff ? "No tienes cursos asignados." : "No estás inscrito en ningún curso."}
+            </EmptyState>
+          )}
+        </section>
       </main>
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Modal PIAA */}
       {showPiaaModal && selectedCoursePiaa && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#101434] rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
-            <div className="sticky top-0 bg-[#0f0f2e] border-b border-[#2a2a4a] px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-white">PIAA - {selectedCoursePiaa.name}</h2>
-              <button
-                onClick={() => {
-                  setShowPiaaModal(false);
-                  setSelectedCoursePiaa(null);
-                }}
-                className="text-white/60 hover:text-white text-2xl transition cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="p-6">
-              <div className="text-white whitespace-pre-wrap break-words bg-[#0a0a1f] rounded px-4 py-3 border border-[#2a2a4a]">
-                {selectedCoursePiaa.content}
-              </div>
-            </div>
-            <div className="bg-[#0f0f2e] border-t border-[#2a2a4a] px-6 py-4 flex justify-end gap-2">
-              <button
-                onClick={() => {
-                  setShowPiaaModal(false);
-                  setSelectedCoursePiaa(null);
-                }}
-                className="bg-[#35448e] hover:bg-[#2a3670] text-white px-4 py-2 rounded-lg transition font-medium cursor-pointer"
-              >
-                Cerrar
-              </button>
-            </div>
+        <Modal
+          title={`PIAA · ${selectedCoursePiaa.name}`}
+          onClose={() => {
+            setShowPiaaModal(false);
+            setSelectedCoursePiaa(null);
+          }}
+          footer={
+            <button
+              type="button"
+              onClick={() => {
+                setShowPiaaModal(false);
+                setSelectedCoursePiaa(null);
+              }}
+              className="rs-btn-secondary ml-auto"
+            >
+              Cerrar
+            </button>
+          }
+        >
+          <div className="whitespace-pre-wrap break-words rounded-xl border border-rs-line bg-white px-4 py-3 text-rs-ink">
+            {selectedCoursePiaa.content}
           </div>
-        </div>
+        </Modal>
       )}
 
-      {/* Modal Lista de Contenidos Generados */}
+      {/* Modal lista de contenidos generados */}
       {showGeneratedContentListModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#101434] rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-auto">
-            <div className="sticky top-0 bg-[#0f0f2e] border-b border-[#2a2a4a] px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-white">Contenidos Generados - {selectedCourseForContent?.name}</h2>
-              <button
-                onClick={() => {
-                  setShowGeneratedContentListModal(false);
-                  setGeneratedContentsList([]);
-                }}
-                className="text-white/60 hover:text-white text-2xl transition cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="p-6">
-              {generatedContentsList.length > 0 ? (
-                <div className="space-y-3">
-                  {generatedContentsList.map((content: any, index: number) => (
-                    <div
-                      key={content._id}
-                      onClick={() => handleSelectGeneratedContent(content, index)}
-                      className="bg-[#0a0a1f] rounded-lg px-4 py-4 border border-[#2a2a4a] hover:border-[#6356E5] cursor-pointer transition flex items-center justify-between group"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="bg-[#6356E5] text-white font-bold px-3 py-1 rounded-full text-sm">
-                            #{index + 1}
-                          </span>
-                          <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                            content.estado === 'PUBLICADO'
-                              ? 'bg-[#28a745] text-white'
-                              : content.estado === 'PENDIENTE_REVISION'
-                              ? 'bg-[#ffc107] text-black'
-                              : 'bg-[#6c757d] text-white'
-                          }`}>
-                            {content.estado}
-                          </span>
-                        </div>
-                        <p className="text-white/80 text-sm">
-                          Generado: {new Date(content.createdAt).toLocaleDateString('es-ES', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                        <div className="flex gap-4 mt-2 text-sm text-white/60">
-                          <span>📝 Resumen: {content.resumen ? '✓' : '✗'}</span>
-                          <span>📚 Glosario: {content.glosario?.length || 0}</span>
-                          <span>❓ Quiz: {content.quiz?.length || 0}</span>
-                          <span>✓ Checklist: {content.checklist?.length || 0}</span>
-                        </div>
-                      </div>
-                      <div className="text-[#6356E5] group-hover:translate-x-1 transition">
-                        →
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-white/60 text-center py-8">
-                  Cargando contenidos generados...
-                </div>
-              )}
-            </div>
-
-            <div className="bg-[#0f0f2e] border-t border-[#2a2a4a] px-6 py-4 flex justify-end gap-2">
-              <button
-                onClick={() => {
-                  setShowGeneratedContentListModal(false);
-                  setGeneratedContentsList([]);
-                }}
-                className="bg-[#35448e] hover:bg-[#2a3670] text-white px-4 py-2 rounded-lg transition font-medium cursor-pointer"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
+        <Modal
+          size="md"
+          title={`Contenidos generados · ${selectedCourseForContent?.name ?? ""}`}
+          onClose={() => {
+            setShowGeneratedContentListModal(false);
+            setGeneratedContentsList([]);
+          }}
+          footer={
+            <button
+              type="button"
+              onClick={() => {
+                setShowGeneratedContentListModal(false);
+                setGeneratedContentsList([]);
+              }}
+              className="rs-btn-secondary ml-auto"
+            >
+              Cerrar
+            </button>
+          }
+        >
+          <GeneratedContentList items={generatedContentsList} onSelect={handleSelectGeneratedContent} />
+        </Modal>
       )}
 
-      {/* Modal Contenido Generado */}
+      {/* Modal contenido generado */}
       {showGeneratedContentModal && selectedGeneratedContent && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#101434] rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
-            <div className="sticky top-0 bg-[#0f0f2e] border-b border-[#2a2a4a] px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="bg-[#6356E5] text-white font-bold px-3 py-1 rounded-full text-sm">
-                  #{selectedGeneratedContent.index}
-                </span>
-                <h2 className="text-xl font-semibold text-white">{selectedGeneratedContent.name}</h2>
-              </div>
-              <button
-                onClick={() => {
-                  setShowGeneratedContentModal(false);
-                  setSelectedGeneratedContent(null);
-                }}
-                className="text-white/60 hover:text-white text-2xl transition cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-            
-            {/* Tabs */}
-            <div className="sticky top-0 bg-[#0f0f2e] border-b border-[#2a2a4a] px-6 flex gap-2 overflow-x-auto">
-              <button
-                onClick={() => setSelectedTab("resumen")}
-                className={`px-4 py-3 font-medium transition border-b-2 whitespace-nowrap ${
-                  selectedTab === "resumen"
-                    ? "border-[#6356E5] text-[#6356E5]"
-                    : "border-transparent text-white/60 hover:text-white"
-                }`}
-              >
-                Resumen
-              </button>
-              <button
-                onClick={() => setSelectedTab("glosario")}
-                className={`px-4 py-3 font-medium transition border-b-2 whitespace-nowrap ${
-                  selectedTab === "glosario"
-                    ? "border-[#6356E5] text-[#6356E5]"
-                    : "border-transparent text-white/60 hover:text-white"
-                }`}
-              >
-                Glosario ({selectedGeneratedContent.glosario.length})
-              </button>
-              <button
-                onClick={() => setSelectedTab("quiz")}
-                className={`px-4 py-3 font-medium transition border-b-2 whitespace-nowrap ${
-                  selectedTab === "quiz"
-                    ? "border-[#6356E5] text-[#6356E5]"
-                    : "border-transparent text-white/60 hover:text-white"
-                }`}
-              >
-                Quiz ({selectedGeneratedContent.quiz.length})
-              </button>
-              <button
-                onClick={() => setSelectedTab("checklist")}
-                className={`px-4 py-3 font-medium transition border-b-2 whitespace-nowrap ${
-                  selectedTab === "checklist"
-                    ? "border-[#6356E5] text-[#6356E5]"
-                    : "border-transparent text-white/60 hover:text-white"
-                }`}
-              >
-                Checklist ({selectedGeneratedContent.checklist.length})
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6">
-              {selectedTab === "resumen" && (
-                <div>
-                  {isEditingContent && editedContent ? (
-                    <textarea
-                      value={editedContent.resumen}
-                      onChange={(e) => setEditedContent({ ...editedContent, resumen: e.target.value })}
-                      className="w-full h-48 bg-[#0a0a1f] text-white rounded px-4 py-3 border border-[#6356E5] focus:outline-none resize-none"
-                      placeholder="Editar resumen..."
-                    />
-                  ) : (
-                    <div className="text-white whitespace-pre-wrap break-words bg-[#0a0a1f] rounded px-4 py-3 border border-[#2a2a4a]">
-                      {selectedGeneratedContent?.resumen}
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              {selectedTab === "glosario" && (
-                <div>
-                  {isEditingContent && editedContent ? (
-                    <div className="space-y-3">
-                      {editedContent.glosario.map((item: any, index: number) => (
-                        <div key={index} className="bg-[#0a0a1f] rounded px-4 py-3 border border-[#2a2a4a]">
-                          <input
-                            type="text"
-                            value={item.term || item.termino || ''}
-                            onChange={(e) => {
-                              const updatedGlosario = [...editedContent.glosario];
-                              updatedGlosario[index] = { ...item, term: e.target.value };
-                              setEditedContent({ ...editedContent, glosario: updatedGlosario });
-                            }}
-                            className="w-full bg-[#151540] text-white font-semibold rounded px-3 py-2 border border-[#6356E5] focus:outline-none mb-2"
-                            placeholder="Término"
-                          />
-                          <textarea
-                            value={item.definition || item.definicion || ''}
-                            onChange={(e) => {
-                              const updatedGlosario = [...editedContent.glosario];
-                              updatedGlosario[index] = { ...item, definition: e.target.value };
-                              setEditedContent({ ...editedContent, glosario: updatedGlosario });
-                            }}
-                            className="w-full bg-[#151540] text-white/80 text-sm rounded px-3 py-2 border border-[#6356E5] focus:outline-none resize-none h-20"
-                            placeholder="Definición"
-                          />
-                          <button
-                            onClick={() => {
-                              const updatedGlosario = editedContent.glosario.filter((_, i) => i !== index);
-                              setEditedContent({ ...editedContent, glosario: updatedGlosario });
-                            }}
-                            className="mt-2 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-sm transition"
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        onClick={() => {
-                          const newItem = { term: '', definition: '' };
-                          setEditedContent({ ...editedContent, glosario: [...editedContent.glosario, newItem] });
-                        }}
-                        className="w-full bg-[#6356E5] hover:bg-[#7a6eff] text-white px-4 py-2 rounded-lg transition font-medium"
-                      >
-                        + Agregar Término
-                      </button>
-                    </div>
-                  ) : (
-                    <div>
-                      {selectedGeneratedContent?.glosario.length > 0 ? (
-                        <div className="space-y-3">
-                          {selectedGeneratedContent.glosario.map((item: any, index: number) => (
-                            <div key={index} className="bg-[#0a0a1f] rounded px-4 py-3 border border-[#2a2a4a]">
-                              <p className="text-white font-semibold">{item.term || item.termino || `Término ${index + 1}`}</p>
-                              <p className="text-white/80 text-sm mt-1">{item.definition || item.definicion || item.description || "Sin definición"}</p>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-white/60 text-center py-8">No hay elementos en el glosario</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              {selectedTab === "quiz" && (
-                <div>
-                  {selectedGeneratedContent.quiz.length > 0 ? (
-                    <div className="space-y-4">
-                      {selectedGeneratedContent.quiz.map((item: any, index: number) => (
-                        <div key={index} className="bg-[#0a0a1f] rounded px-4 py-3 border border-[#2a2a4a]">
-                          <p className="text-white font-semibold mb-2">{index + 1}. {item.pregunta || item.question || `Pregunta ${index + 1}`}</p>
-                          {item.opciones && Array.isArray(item.opciones) && (
-                            <div className="space-y-2 ml-4">
-                              {item.opciones.map((opcion: string, optIndex: number) => (
-                                <div key={optIndex} className="text-white/80 text-sm">
-                                  <span className="text-[#6356E5]">{"ABCD"[optIndex]}</span> - {opcion}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          {item.respuesta && (
-                            <p className="text-[#28a745] text-sm mt-2">Respuesta: {item.respuesta}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-white/60 text-center py-8">No hay preguntas en el quiz</div>
-                  )}
-                </div>
-              )}
-              
-              {selectedTab === "checklist" && (
-                <div>
-                  {isEditingContent && editedContent ? (
-                    <div className="space-y-2">
-                      {editedContent.checklist.map((item: string, index: number) => (
-                        <div key={index} className="bg-[#0a0a1f] rounded px-4 py-3 border border-[#2a2a4a] flex items-start gap-3">
-                          <div className="flex-1 w-full">
-                            <textarea
-                              value={item}
-                              onChange={(e) => {
-                                const updatedChecklist = [...editedContent.checklist];
-                                updatedChecklist[index] = e.target.value;
-                                setEditedContent({ ...editedContent, checklist: updatedChecklist });
-                              }}
-                              className="w-full bg-[#151540] text-white rounded px-3 py-2 border border-[#6356E5] focus:outline-none resize-none h-20"
-                              placeholder="Punto de checklist"
-                            />
-                            <button
-                              onClick={() => {
-                                const updatedChecklist = editedContent.checklist.filter((_, i) => i !== index);
-                                setEditedContent({ ...editedContent, checklist: updatedChecklist });
-                              }}
-                              className="mt-2 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-sm transition"
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                      <button
-                        onClick={() => {
-                          setEditedContent({ ...editedContent, checklist: [...editedContent.checklist, ''] });
-                        }}
-                        className="w-full bg-[#6356E5] hover:bg-[#7a6eff] text-white px-4 py-2 rounded-lg transition font-medium"
-                      >
-                        + Agregar Punto
-                      </button>
-                    </div>
-                  ) : (
-                    <div>
-                      {selectedGeneratedContent?.checklist.length > 0 ? (
-                        <div className="space-y-2">
-                          {selectedGeneratedContent.checklist.map((item: string, index: number) => (
-                            <div key={index} className="bg-[#0a0a1f] rounded px-4 py-3 border border-[#2a2a4a] flex items-start gap-3">
-                              <div className="flex-1">
-                                <p className="text-white whitespace-pre-wrap break-words">{item}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-white/60 text-center py-8">No hay elementos en el checklist</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="bg-[#0f0f2e] border-t border-[#2a2a4a] px-6 py-4 flex justify-between gap-2">
-              <div className="flex gap-2">
+        <Modal
+          title={
+            <span className="flex items-center gap-3">
+              <span className="rounded-full bg-rs-lime px-2.5 py-1 text-xs font-bold text-rs-950">
+                #{selectedGeneratedContent.index}
+              </span>
+              <span className="truncate">{selectedGeneratedContent.name}</span>
+              <StatusChip estado={selectedGeneratedContent.estado} />
+            </span>
+          }
+          onClose={closeContentModal}
+          closeDisabled={isSaving}
+          toolbar={
+            <GeneratedContentTabs content={selectedGeneratedContent} tab={selectedTab} onTabChange={setSelectedTab} />
+          }
+          footer={
+            <>
+              <div className="flex flex-wrap gap-2">
                 {isEditingContent ? (
                   <>
-                    <button
-                      onClick={handleSaveEdit}
-                      disabled={isSaving}
-                      className="bg-[#28a745] hover:bg-[#218838] disabled:bg-[#999] text-white px-4 py-2 rounded-lg transition font-medium"
-                    >
-                      {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                    <button type="button" onClick={handleSaveEdit} disabled={isSaving} className="rs-btn-primary">
+                      <LuSave className="size-4" aria-hidden="true" />
+                      {isSaving ? "Guardando..." : "Guardar cambios"}
                     </button>
-                    <button
-                      onClick={handleCancelEdit}
-                      disabled={isSaving}
-                      className="bg-[#6c757d] hover:bg-[#5a6268] disabled:bg-[#999] text-white px-4 py-2 rounded-lg transition font-medium"
-                    >
+                    <button type="button" onClick={handleCancelEdit} disabled={isSaving} className="rs-btn-ghost">
                       Cancelar
                     </button>
                   </>
                 ) : (
                   <>
-                    {selectedGeneratedContent?.estado === 'PENDIENTE_REVISION' && (
-                      <button
-                        onClick={handleValidateMaterial}
-                        disabled={isSaving}
-                        className="bg-[#17a2b8] hover:bg-[#138496] disabled:bg-[#999] text-white px-4 py-2 rounded-lg transition font-medium"
-                      >
-                        {isSaving ? 'Validando...' : 'Validar'}
+                    {selectedGeneratedContent?.estado === "PENDIENTE_REVISION" && (
+                      <button type="button" onClick={handleValidateMaterial} disabled={isSaving} className="rs-btn-accent">
+                        <LuCheck className="size-4" aria-hidden="true" />
+                        {isSaving ? "Validando..." : "Validar y publicar"}
                       </button>
                     )}
-                    <button
-                      onClick={handleStartEdit}
-                      disabled={isSaving}
-                      className="bg-[#6356E5] hover:bg-[#4f48c7] disabled:bg-[#999] text-white px-4 py-2 rounded-lg transition font-medium"
-                    >
-                      Editar
+                    <button type="button" onClick={handleStartEdit} disabled={isSaving} className="rs-btn-secondary">
+                      <LuPencil className="size-4" aria-hidden="true" /> Editar
                     </button>
                   </>
                 )}
               </div>
-              <button
-                onClick={() => {
-                  setShowGeneratedContentModal(false);
-                  setSelectedGeneratedContent(null);
-                  setIsEditingContent(false);
-                  setEditedContent(null);
-                }}
-                disabled={isSaving}
-                className="bg-[#35448e] hover:bg-[#2a3670] disabled:bg-[#999] text-white px-4 py-2 rounded-lg transition font-medium"
-              >
+              <button type="button" onClick={closeContentModal} disabled={isSaving} className="rs-btn-ghost">
                 Cerrar
               </button>
-            </div>
-          </div>
-        </div>
+            </>
+          }
+        >
+          <GeneratedContentBody
+            content={selectedGeneratedContent}
+            tab={selectedTab}
+            editing={
+              isEditingContent && editedContent ? { value: editedContent, onChange: setEditedContent } : undefined
+            }
+          />
+        </Modal>
       )}
     </div>
   );

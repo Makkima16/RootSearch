@@ -15,7 +15,18 @@ import {
   getTotalCoursesCount,
   getGlobalCourseStatistics,
 } from "@/services/metrics";
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import {
+  LuArrowRight,
+  LuBadgeCheck,
+  LuBookOpen,
+  LuChartColumn,
+  LuCircleAlert,
+  LuGraduationCap,
+  LuTrendingDown,
+  LuTrophy,
+  LuUsers,
+} from "react-icons/lu";
+import { LoadingScreen, MessageScreen, PageHeader, StatCard } from "@/components/ui";
 
 type MaterialsStats = {
   PENDIENTE_REVISION: number;
@@ -132,34 +143,22 @@ export default function MetricsPage() {
   }, [router]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
-        <div className="text-center">
-          <AiOutlineLoading3Quarters className="animate-spin text-4xl text-[#6356E5] mx-auto mb-4" />
-          <span className="text-lg">Cargando métricas...</span>
-        </div>
-      </div>
-    );
+    return <LoadingScreen label="Cargando métricas..." />;
   }
 
   if (error || !user) {
     return (
-      <div className="flex h-screen">
+      <div className="flex min-h-screen flex-col bg-rs-50 lg:flex-row">
         <SideBar user={user ?? undefined} />
-        <main className="flex-1 p-8 bg-[#040418]">
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <h1 className="text-2xl font-semibold mb-2 text-white">⚠️ Acceso Denegado</h1>
-              <p className="text-zinc-300">{error || "No tienes permisos para acceder a esta sección"}</p>
-              <a
-                href="/"
-                className="mt-4 inline-block bg-[#6356E5] hover:bg-[#4f48c7] text-white px-4 py-2 rounded-lg transition"
-              >
-                Volver al inicio
-              </a>
-            </div>
-          </div>
-        </main>
+        <MessageScreen
+          title="Acceso denegado"
+          message={error || "No tienes permisos para acceder a esta sección"}
+          action={
+            <a href="/" className="rs-btn-primary">
+              Volver al inicio
+            </a>
+          }
+        />
       </div>
     );
   }
@@ -186,6 +185,11 @@ export default function MetricsPage() {
     const createSlice = (percentage: number, color: string) => {
       if (percentage === 0) return null;
 
+      // Una porción del 100 % no se puede dibujar como arco: se dibuja un círculo completo
+      if (percentage >= 100) {
+        return <circle cx={centerX} cy={centerY} r={radius} fill={color} key={color} />;
+      }
+
       const angle = (percentage / 100) * 360;
       const startAngle = currentAngle;
       const endAngle = currentAngle + angle;
@@ -208,284 +212,202 @@ export default function MetricsPage() {
 
       currentAngle = endAngle;
 
-      return <path d={pathData} fill={color} key={color} />;
+      return <path d={pathData} fill={color} stroke="#F8FBF8" strokeWidth={2} key={color} />;
     };
 
+    // Colores de la paleta, separados también por luminosidad
     const colors = {
-      PENDIENTE_REVISION: "#FFA500", // Naranja
-      ERROR_GENERACION: "#FF4444", // Rojo
-      PUBLICADO: "#4CAF50", // Verde
+      PENDIENTE_REVISION: "#E8B04B", // ámbar
+      ERROR_GENERACION: "#C0412B", // terracota
+      PUBLICADO: "#12392C", // verde profundo
     };
+
+    const legend = [
+      { key: "PENDIENTE_REVISION" as const, label: "Pendiente de revisión", value: PENDIENTE_REVISION },
+      { key: "ERROR_GENERACION" as const, label: "Error de generación", value: ERROR_GENERACION },
+      { key: "PUBLICADO" as const, label: "Publicado", value: PUBLICADO },
+    ];
 
     return (
-      <div className="bg-[#101434] rounded-lg shadow-md p-6 mt-6">
-        <h2 className="text-2xl font-semibold mb-4 text-white">
-          Contenido Generado por IA
-        </h2>
-        <div className="flex items-center justify-center">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <svg width="240" height="240" viewBox="0 0 240 240">
-              {createSlice(percentages.PENDIENTE_REVISION, colors.PENDIENTE_REVISION)}
-              {createSlice(percentages.ERROR_GENERACION, colors.ERROR_GENERACION)}
-              {createSlice(percentages.PUBLICADO, colors.PUBLICADO)}
-            </svg>
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-6 h-6 rounded"
-                  style={{ backgroundColor: colors.PENDIENTE_REVISION }}
-                ></div>
+      <section className="rs-card mt-6 p-6">
+        <h2 className="rs-title mb-6 text-xl">Contenido generado por IA</h2>
+        <div className="flex flex-col items-center justify-center gap-8 md:flex-row">
+          <svg
+            width="240"
+            height="240"
+            viewBox="0 0 240 240"
+            role="img"
+            aria-label={`Publicado ${PUBLICADO}, pendiente ${PENDIENTE_REVISION}, error ${ERROR_GENERACION}`}
+            className="max-w-full"
+          >
+            {total === 0 && <circle cx={centerX} cy={centerY} r={radius} fill="#DCEDE3" />}
+            {createSlice(percentages.PENDIENTE_REVISION, colors.PENDIENTE_REVISION)}
+            {createSlice(percentages.ERROR_GENERACION, colors.ERROR_GENERACION)}
+            {createSlice(percentages.PUBLICADO, colors.PUBLICADO)}
+          </svg>
+          <div className="flex flex-col gap-3">
+            {legend.map((item) => (
+              <div key={item.key} className="flex items-center gap-3">
+                <span className="size-5 shrink-0 rounded" style={{ backgroundColor: colors[item.key] }} />
                 <div>
-                  <p className="text-sm text-white/70">Pendiente de Revisión</p>
-                  <p className="text-lg font-semibold text-white">
-                    {PENDIENTE_REVISION} ({percentages.PENDIENTE_REVISION.toFixed(1)}%)
+                  <p className="text-sm text-rs-muted">{item.label}</p>
+                  <p className="text-lg font-semibold text-rs-ink">
+                    {item.value} ({percentages[item.key].toFixed(1)}%)
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-6 h-6 rounded"
-                  style={{ backgroundColor: colors.ERROR_GENERACION }}
-                ></div>
-                <div>
-                  <p className="text-sm text-white/70">Error de Generación</p>
-                  <p className="text-lg font-semibold text-white">
-                    {ERROR_GENERACION} ({percentages.ERROR_GENERACION.toFixed(1)}%)
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-6 h-6 rounded"
-                  style={{ backgroundColor: colors.PUBLICADO }}
-                ></div>
-                <div>
-                  <p className="text-sm text-white/70">Publicado</p>
-                  <p className="text-lg font-semibold text-white">
-                    {PUBLICADO} ({percentages.PUBLICADO.toFixed(1)}%)
-                  </p>
-                </div>
-              </div>
-              <div className="border-t border-white/20 pt-2 mt-2">
-                <p className="text-sm text-white/70">Total de Materiales</p>
-                <p className="text-xl font-bold text-white">{total}</p>
-              </div>
+            ))}
+            <div className="mt-2 border-t border-rs-line pt-3">
+              <p className="text-sm text-rs-muted">Total de materiales</p>
+              <p className="font-display text-2xl font-semibold text-rs-900">{total}</p>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     );
   };
 
+  const isAdmin = user.role.toLowerCase() === "administrador";
+  const isTeacher = user.role.toLowerCase() === "docente";
+
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen flex-col bg-rs-50 text-rs-ink lg:flex-row">
       <SideBar user={user!} />
-      <main className="flex-1 p-8 bg-[#040418] overflow-y-auto">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-white">
-            Métricas de Desempeño
-          </h1>
+      <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-6xl">
+          <PageHeader icon={LuChartColumn} title="Métricas de desempeño" />
 
           {/* Métricas principales */}
-          <div className={`grid grid-cols-1 ${user.role.toLowerCase() === 'administrador' ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-6 mb-6`}>
-            {/* Cantidad de Cursos */}
-            <div className="bg-[#101434] rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white/70 text-sm font-medium mb-1">
-                    Cursos Activos
-                  </p>
-                  <p className="text-4xl font-bold text-[#6356E5]">
-                    {metrics.coursesCount}
-                  </p>
-                </div>
-                <div className="bg-[#6356E5] bg-opacity-20 rounded-full p-4">
-                  <img
-                    src="/assets/iconos/cursos.png"
-                    alt="Courses"
-                    className="w-12 h-12"
-                  />
-                </div>
-              </div>
-              <p className="text-white/60 text-sm mt-4">
-                {user.role.toLowerCase() === 'administrador' 
-                  ? 'Total de cursos en el sistema' 
-                  : 'Total de cursos que estás impartiendo'}
-              </p>
-            </div>
-
-            {/* Cantidad de Estudiantes */}
-            <div className="bg-[#101434] rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white/70 text-sm font-medium mb-1">
-                    Estudiantes {user.role.toLowerCase() === 'docente' && 'Únicos'}
-                  </p>
-                  <p className="text-4xl font-bold text-[#7a6eff]">
-                    {metrics.studentsCount}
-                  </p>
-                </div>
-                <div className="bg-[#7a6eff] bg-opacity-20 rounded-full p-4">
-                  <img
-                    src="/assets/iconos/students.png"
-                    alt="Students"
-                    className="w-12 h-12"
-                  />
-                </div>
-              </div>
-              <p className="text-white/60 text-sm mt-4">
-                {user.role.toLowerCase() === 'administrador'
-                  ? 'Total de estudiantes registrados'
-                  : 'Estudiantes diferentes a los que impartes clase'}
-              </p>
-            </div>
-
-            {/* Cantidad de Docentes - Solo para administradores */}
-            {user.role.toLowerCase() === 'administrador' && (
-              <div className="bg-[#101434] rounded-lg shadow-md p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white/70 text-sm font-medium mb-1">
-                      Docentes Activos
-                    </p>
-                    <p className="text-4xl font-bold text-[#28a745]">
-                      {metrics.teachersCount}
-                    </p>
-                  </div>
-                  <div className="bg-[#28a745] bg-opacity-20 rounded-full p-4">
-                    <span className="text-4xl">👨‍🏫</span>
-                  </div>
-                </div>
-                <p className="text-white/60 text-sm mt-4">
-                  Total de docentes registrados
-                </p>
-              </div>
+          <div className={`mb-6 grid grid-cols-1 gap-4 ${isAdmin ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+            <StatCard
+              tone="deep"
+              icon={LuBookOpen}
+              label="Cursos activos"
+              value={metrics.coursesCount}
+              hint={isAdmin ? "Total de cursos en el sistema" : "Total de cursos que estás impartiendo"}
+            />
+            <StatCard
+              tone="mint"
+              icon={LuUsers}
+              label={isTeacher ? "Estudiantes únicos" : "Estudiantes"}
+              value={metrics.studentsCount}
+              hint={isAdmin ? "Total de estudiantes registrados" : "Estudiantes diferentes a los que impartes clase"}
+            />
+            {isAdmin && (
+              <StatCard
+                tone="lime"
+                icon={LuGraduationCap}
+                label="Docentes activos"
+                value={metrics.teachersCount}
+                hint="Total de docentes registrados"
+              />
             )}
           </div>
 
-          {/* Estadísticas de Cursos */}
+          {/* Estadísticas de cursos */}
           {metrics.courseStats && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              {/* Promedio de Estudiantes */}
-              <div className="bg-[#101434] rounded-lg shadow-md p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-white/70 text-sm font-medium">
-                    Promedio de Estudiantes
-                  </p>
-                  <span className="text-2xl">📊</span>
+            <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="rs-card p-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-sm font-medium text-rs-muted">Promedio de estudiantes</p>
+                  <LuChartColumn className="size-5 text-rs-600" aria-hidden="true" />
                 </div>
-                <p className="text-3xl font-bold text-[#6356E5]">
-                  {metrics.courseStats.averageStudents}
-                </p>
-                <p className="text-white/60 text-xs mt-2">
-                  Por curso {user.role.toLowerCase() === 'administrador' && '(global)'}
-                </p>
+                <p className="font-display text-3xl font-semibold text-rs-900">{metrics.courseStats.averageStudents}</p>
+                <p className="mt-2 text-xs text-rs-muted">Por curso {isAdmin && "(global)"}</p>
               </div>
 
-              {/* Curso con Más Estudiantes */}
-              <div className="bg-[#101434] rounded-lg shadow-md p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-white/70 text-sm font-medium">
-                    Curso Más Poblado
-                  </p>
-                  <span className="text-2xl">🏆</span>
+              <div className="rs-card p-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-sm font-medium text-rs-muted">Curso más poblado</p>
+                  <LuTrophy className="size-5 text-rs-600" aria-hidden="true" />
                 </div>
                 {metrics.courseStats.courseWithMostStudents ? (
                   <>
-                    <p className="text-2xl font-bold text-[#28a745] mb-1">
+                    <p className="mb-1 font-display text-2xl font-semibold text-rs-700">
                       {metrics.courseStats.courseWithMostStudents.studentCount} estudiantes
                     </p>
-                    <p className="text-white/80 text-sm truncate" title={metrics.courseStats.courseWithMostStudents.name}>
+                    <p className="truncate text-sm text-rs-ink" title={metrics.courseStats.courseWithMostStudents.name}>
                       {metrics.courseStats.courseWithMostStudents.name}
                     </p>
                   </>
                 ) : (
-                  <p className="text-white/60 text-sm">Sin datos</p>
+                  <p className="text-sm text-rs-muted">Sin datos</p>
                 )}
               </div>
 
-              {/* Curso con Menos Estudiantes */}
-              <div className="bg-[#101434] rounded-lg shadow-md p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-white/70 text-sm font-medium">
-                    Curso Menos Poblado
-                  </p>
-                  <span className="text-2xl">📉</span>
+              <div className="rs-card p-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-sm font-medium text-rs-muted">Curso menos poblado</p>
+                  <LuTrendingDown className="size-5 text-rs-600" aria-hidden="true" />
                 </div>
                 {metrics.courseStats.courseWithLeastStudents ? (
                   <>
-                    <p className="text-2xl font-bold text-[#fd7e14] mb-1">
-                      {metrics.courseStats.courseWithLeastStudents.studentCount} estudiante{metrics.courseStats.courseWithLeastStudents.studentCount !== 1 ? 's' : ''}
+                    <p className="mb-1 font-display text-2xl font-semibold text-rs-warn">
+                      {metrics.courseStats.courseWithLeastStudents.studentCount} estudiante{metrics.courseStats.courseWithLeastStudents.studentCount !== 1 ? "s" : ""}
                     </p>
-                    <p className="text-white/80 text-sm truncate" title={metrics.courseStats.courseWithLeastStudents.name}>
+                    <p className="truncate text-sm text-rs-ink" title={metrics.courseStats.courseWithLeastStudents.name}>
                       {metrics.courseStats.courseWithLeastStudents.name}
                     </p>
                   </>
                 ) : (
-                  <p className="text-white/60 text-sm">Sin datos</p>
+                  <p className="text-sm text-rs-muted">Sin datos</p>
                 )}
               </div>
             </div>
           )}
 
-          {/* Cursos sin Material Generado - Solo para Docentes */}
-          {user.role.toLowerCase() === "docente" && metrics.coursesWithoutMaterial.length > 0 && (
-            <div className="bg-[#101434] rounded-lg shadow-md p-6 mb-6">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl">⚠️</span>
+          {/* Cursos sin material generado (solo docentes) */}
+          {isTeacher && metrics.coursesWithoutMaterial.length > 0 && (
+            <section className="rs-card mb-6 p-6">
+              <div className="mb-4 flex items-center gap-3">
+                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-rs-warn-bg text-rs-warn">
+                  <LuCircleAlert className="size-5" aria-hidden="true" />
+                </span>
                 <div>
-                  <h2 className="text-2xl font-semibold text-white">
-                    Cursos sin Material Generado
-                  </h2>
-                  <p className="text-white/60 text-sm">
-                    {metrics.coursesWithoutMaterial.length} curso{metrics.coursesWithoutMaterial.length !== 1 ? 's' : ''} sin contenido de IA
+                  <h2 className="rs-title text-xl">Cursos sin material generado</h2>
+                  <p className="text-sm text-rs-muted">
+                    {metrics.coursesWithoutMaterial.length} curso{metrics.coursesWithoutMaterial.length !== 1 ? "s" : ""} sin contenido de IA
                   </p>
                 </div>
               </div>
-              <div className="space-y-3">
+              <ul className="space-y-3">
                 {metrics.coursesWithoutMaterial.map((course) => (
-                  <div
+                  <li
                     key={course._id}
-                    className="bg-[#0a0a1f] rounded-lg px-4 py-3 border border-[#2a2a4a] hover:border-[#fd7e14] transition"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rs-line bg-white px-4 py-3 transition-colors hover:border-rs-400"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className="text-white font-semibold">{course.name}</h3>
-                        <p className="text-white/60 text-sm mt-1">{course.description}</p>
-                      </div>
-                      <div className="text-right ml-4">
-                        <p className="text-white/70 text-sm">
-                          {course.studentCount} estudiante{course.studentCount !== 1 ? 's' : ''}
-                        </p>
-                        <a
-                          href="/dashboard"
-                          className="text-[#6356E5] hover:text-[#7a6eff] text-sm font-medium mt-1 inline-block"
-                        >
-                          Generar contenido →
-                        </a>
-                      </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-rs-ink">{course.name}</h3>
+                      <p className="mt-1 text-sm text-rs-muted">{course.description}</p>
                     </div>
-                  </div>
+                    <div className="text-right">
+                      <p className="text-sm text-rs-muted">
+                        {course.studentCount} estudiante{course.studentCount !== 1 ? "s" : ""}
+                      </p>
+                      <a
+                        href="/dashboard"
+                        className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-rs-700 hover:text-rs-800"
+                      >
+                        Generar contenido <LuArrowRight className="size-4" aria-hidden="true" />
+                      </a>
+                    </div>
+                  </li>
                 ))}
-              </div>
-            </div>
+              </ul>
+            </section>
           )}
 
           {/* Mensaje cuando todos los cursos tienen material */}
-          {user.role.toLowerCase() === "docente" && metrics.coursesWithoutMaterial.length === 0 && metrics.coursesCount > 0 && (
-            <div className="bg-[#101434] rounded-lg shadow-md p-6 mb-6 border border-[#28a745]/30">
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">✅</span>
-                <div>
-                  <h3 className="text-xl font-semibold text-[#28a745]">
-                    ¡Excelente trabajo!
-                  </h3>
-                  <p className="text-white/70 text-sm">
-                    Todos tus cursos tienen material generado por IA
-                  </p>
-                </div>
+          {isTeacher && metrics.coursesWithoutMaterial.length === 0 && metrics.coursesCount > 0 && (
+            <section className="mb-6 flex items-center gap-3 rounded-2xl bg-rs-900 p-6 text-white">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-rs-lime text-rs-900">
+                <LuBadgeCheck className="size-6" aria-hidden="true" />
+              </span>
+              <div>
+                <h3 className="font-display text-xl font-semibold text-rs-lime">¡Excelente trabajo!</h3>
+                <p className="text-sm text-rs-150">Todos tus cursos tienen material generado por IA</p>
               </div>
-            </div>
+            </section>
           )}
 
           {/* Gráfico de pastel para administradores */}

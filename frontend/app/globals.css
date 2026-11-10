@@ -1,29 +1,167 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Paleta RootSearch (verde).
+ * Todos los colores de la interfaz salen de estos tokens; en Tailwind se usan
+ * como bg-rs-*, text-rs-*, border-rs-*, etc.
+ */
+@theme {
+  /* Verdes de marca */
+  --color-rs-950: #0b231b; /* fondo de autenticación, texto más oscuro */
+  --color-rs-900: #12392c; /* barra lateral, bloques destacados */
+  --color-rs-850: #1a4a3a; /* hover sobre fondos oscuros */
+  --color-rs-800: #164f3d; /* hover del primario, texto sobre tintes */
+  --color-rs-700: #1e6b52; /* primario */
+  --color-rs-600: #3a8a65;
+  --color-rs-400: #8db59e; /* salvia */
+  --color-rs-300: #a9cbb7;
+  --color-rs-200: #c3dfce;
+  --color-rs-150: #cfe3d7;
+  --color-rs-100: #dcede3;
+  --color-rs-50: #edf3ee; /* fondo de página */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Acento */
+  --color-rs-lime: #c6de73;
+  --color-rs-lime-soft: #e4efb8;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+  /* Superficies y texto */
+  --color-rs-surface: #f8fbf8;
+  --color-rs-line: #d3e2d8;
+  --color-rs-line-soft: #e1ece5;
+  --color-rs-input: #bfd3c6;
+  --color-rs-ink: #0f241c;
+  --color-rs-muted: #4a5e55;
 
+  /* Estados de material */
+  --color-rs-info-bg: #d8ecf0;
+  --color-rs-info: #154a57;
+  --color-rs-warn-bg: #fbefd5;
+  --color-rs-warn: #6b4105;
+  --color-rs-warn-dot: #c98a12;
+  --color-rs-ok-bg: #c3dfce;
+  --color-rs-ok: #0f3b2b;
+  --color-rs-error-bg: #f9e3df;
+  --color-rs-error: #9b2615;
+
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), sans-serif;
+}
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-rs-50);
+  color: var(--color-rs-ink);
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-rs-700);
+  outline-offset: 2px;
+}
+
+/* Componentes reutilizables */
+@layer components {
+  .rs-card {
+    @apply rounded-2xl border border-rs-line bg-rs-surface;
+  }
+
+  .rs-title {
+    @apply font-display font-semibold tracking-tight text-rs-900;
+  }
+
+  .rs-btn {
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[10px] px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .rs-btn-primary {
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[10px] px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 bg-rs-700 text-white hover:bg-rs-800;
+  }
+
+  .rs-btn-accent {
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[10px] px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 bg-rs-lime text-rs-950 hover:bg-[#d4e78f];
+  }
+
+  .rs-btn-secondary {
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[10px] px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 border border-rs-400 bg-rs-100 text-rs-900 hover:bg-rs-200;
+  }
+
+  .rs-btn-ghost {
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[10px] px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 bg-transparent text-rs-700 hover:bg-rs-100;
+  }
+
+  .rs-btn-danger {
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[10px] px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 bg-rs-error text-white hover:bg-[#7f1e10];
+  }
+
+  .rs-input {
+    @apply min-h-11 w-full rounded-[10px] border border-rs-input bg-white px-3.5 text-[15px] text-rs-ink placeholder:text-rs-muted/70 focus:border-rs-700 focus:outline-2 focus:outline-rs-700;
+  }
+
+  .rs-label {
+    @apply mb-1.5 block text-sm font-medium text-rs-ink;
+  }
+
+  .rs-chip {
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+
+  .rs-table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .rs-table thead tr {
+    @apply bg-[#e6f0e9] text-left text-xs uppercase tracking-wide text-rs-800;
+  }
+
+  .rs-table th {
+    @apply px-4 py-2.5 font-semibold;
+  }
+
+  .rs-table td {
+    @apply border-b border-rs-line-soft px-4 py-3.5;
+  }
+
+  .rs-table tbody tr:hover {
+    @apply bg-[#eef5f0];
+  }
+
+  /* Contenido Markdown generado por la IA */
+  .rs-prose {
+    @apply max-w-none text-base leading-relaxed text-[#23362d];
+  }
+
+  .rs-prose h1,
+  .rs-prose h2,
+  .rs-prose h3 {
+    @apply mt-6 mb-2 font-display font-semibold text-rs-900;
+  }
+
+  .rs-prose h1 {
+    @apply text-2xl;
+  }
+
+  .rs-prose h2 {
+    @apply text-xl;
+  }
+
+  .rs-prose h3 {
+    @apply text-lg text-rs-700;
+  }
+
+  .rs-prose p {
+    @apply my-3;
+  }
+
+  .rs-prose ul {
+    @apply my-3 list-disc pl-6;
+  }
+
+  .rs-prose ol {
+    @apply my-3 list-decimal pl-6;
+  }
+
+  .rs-prose strong {
+    @apply font-semibold text-rs-900;
+  }
 }
 
 @keyframes slide-in-right {
@@ -34,6 +172,17 @@ body {
   to {
     transform: translateX(0);
     opacity: 1;
+  }
+}
+
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
   }
 }
 

@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { getUserProfile } from "../../services/users";
 import { getStudentCourseMaterials } from "../../services/materials";
 import SideBar from "@/components/SideBar";
-import { FaBook, FaExternalLinkAlt } from "react-icons/fa";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { LuBookOpen, LuExternalLink, LuLoaderCircle } from 'react-icons/lu';
 
 type Material = {
   courseName: string;
@@ -58,9 +57,9 @@ export default function HomeWorkPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
+      <div className="flex items-center justify-center min-h-screen bg-rs-50 text-rs-ink">
         <div className="text-center">
-          <AiOutlineLoading3Quarters className="animate-spin text-4xl text-[#6356E5] mx-auto mb-4" />
+          <LuLoaderCircle className="animate-spin text-4xl text-rs-700 mx-auto mb-4" />
           <span className="text-lg">Cargando...</span>
         </div>
       </div>
@@ -69,13 +68,13 @@ export default function HomeWorkPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#040418] text-white">
+      <div className="flex items-center justify-center min-h-screen bg-rs-50 text-rs-ink">
         <div className="text-center">
-          <h1 className="text-2xl font-semibold mb-2">⚠️ Acceso Denegado</h1>
-          <p className="text-zinc-300">{error}</p>
+          <h1 className="rs-title text-2xl mb-2">Acceso Denegado</h1>
+          <p className="text-rs-ink">{error}</p>
           <a
             href="/dashboard"
-            className="mt-4 inline-block bg-[#6356E5] hover:bg-[#4f48c7] text-white px-4 py-2 rounded-lg transition"
+            className="mt-4 inline-block bg-rs-700 hover:bg-rs-800 text-white px-4 py-2 rounded-lg transition"
           >
             Volver al inicio
           </a>
@@ -85,28 +84,28 @@ export default function HomeWorkPage() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-[#040418] text-white font-sans">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-rs-50 text-rs-ink font-sans">
       <SideBar user={currentUser!} />
-      <main className="flex-1 p-4 sm:p-6 lg:p-8">
+      <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 lg:px-10">
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-            <FaBook className="text-[#6356E5] text-xl sm:text-2xl" /> 
+          <h1 className="rs-title text-2xl sm:text-3xl flex items-center gap-2">
+            <LuBookOpen className="text-rs-700 text-xl sm:text-2xl" /> 
             <span>Mis Tareas</span>
           </h1>
-          <p className="text-zinc-400 mt-2 text-sm sm:text-base">
+          <p className="text-rs-muted mt-2 text-sm sm:text-base">
             Aquí podrás ver todas tus tareas y materiales asignados
           </p>
         </div>
 
         {/* Contenedor de tareas */}
-        <div className="bg-[#101434] rounded-lg p-6 shadow-lg">
+        <div className="bg-rs-surface rounded-lg p-6 shadow-lg">
           {materials.length === 0 ? (
             <div className="text-center py-12">
-              <FaBook className="text-6xl text-zinc-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-2 text-zinc-300">
+              <LuBookOpen className="text-6xl text-rs-muted mx-auto mb-4" />
+              <h2 className="text-xl font-semibold mb-2 text-rs-ink">
                 No hay tareas disponibles
               </h2>
-              <p className="text-zinc-500">
+              <p className="text-rs-muted">
                 Actualmente no tienes tareas asignadas. Cuando tu profesor agregue nuevas tareas, aparecerán aquí.
               </p>
             </div>
@@ -115,25 +114,25 @@ export default function HomeWorkPage() {
               {materials.map((material) => (
                 <div
                   key={material.materialId}
-                  className="bg-[#1a1a2e] rounded-lg p-4 border border-[#333] hover:border-[#6356E5] transition"
+                  className="bg-white rounded-lg p-4 border border-rs-line hover:border-rs-600 transition"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="text-lg font-semibold flex-1">{material.title}</h3>
-                    <span className="text-xs bg-[#6356E5] px-2 py-1 rounded-full ml-2">
+                    <span className="text-xs bg-rs-700 text-white px-2 py-1 rounded-full ml-2">
                       {material.type}
                     </span>
                   </div>
-                  <p className="text-[#6356E5] text-sm font-medium mb-2">{material.courseName}</p>
-                  <p className="text-zinc-400 text-sm mb-3">{material.description}</p>
+                  <p className="text-rs-700 text-sm font-medium mb-2">{material.courseName}</p>
+                  <p className="text-rs-muted text-sm mb-3">{material.description}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-zinc-500">{material.originalName}</span>
+                    <span className="text-xs text-rs-muted">{material.originalName}</span>
                     <a
                       href={material.storageRef}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#6356E5] hover:text-[#4f48c7] transition"
+                      className="text-rs-700 hover:text-rs-800 transition"
                     >
-                      <FaExternalLinkAlt className="text-sm" />
+                      <LuExternalLink className="text-sm" />
                     </a>
                   </div>
                 </div>
